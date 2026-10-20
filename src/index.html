@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La Batalla por Villaviciosa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:ital,wght@0,400;0,700;0,800;1,400&family=Pixelify+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <section id="scr-menu" class="screen active">
+    <canvas id="menu-bg" aria-hidden="true"></canvas>
+    <div class="menu-box">
+      <h1 class="title"><span>La Batalla por</span>Villaviciosa</h1>
+      <p class="subtitle">Tres facciones. Una Villa. Demasiado poco sentido común.</p>
+      <nav class="menu-nav" aria-label="Menú principal">
+        <button data-act="new">NUEVA PARTIDA</button>
+        <button data-act="continue" id="btn-continue">CONTINUAR PARTIDA</button>
+        <button data-act="ency">ENCICLOPEDIA DE PERSONAJES</button>
+        <button data-act="help">CÓMO JUGAR</button>
+        <button data-act="settings">AJUSTES</button>
+      </nav>
+    </div>
+  </section>
+
+  <section id="scr-setup" class="screen">
+    <div class="page">
+      <div class="page-head"><h1>Nueva partida</h1><button class="btn ghost" data-act="menu">Volver</button></div>
+      <div id="setup-body"></div>
+      <div class="start-bar"><button class="btn end" data-act="start">Empezar batalla</button></div>
+    </div>
+  </section>
+
+  <section id="scr-ency" class="screen">
+    <div class="page">
+      <div class="page-head"><h1>Enciclopedia de personajes</h1><button class="btn ghost" data-act="menu">Volver</button></div>
+      <div id="ency-tabs" role="group" aria-label="Facciones"></div>
+      <div class="ency-wrap"><div id="ency-list"></div><div id="ency-detail"></div></div>
+    </div>
+  </section>
+
+  <section id="scr-help" class="screen">
+    <div class="page">
+      <div class="page-head"><h1>Cómo jugar</h1><button class="btn ghost" data-act="menu">Volver</button></div>
+      <div id="help-body"></div>
+    </div>
+  </section>
+
+  <section id="scr-battle" class="screen">
+    <header id="topbar"></header>
+    <div id="mapwrap">
+      <canvas id="map" aria-label="Tablero hexagonal"></canvas>
+      <button id="goal" title="Centrar la cámara en el comandante rival"></button>
+      <div id="legend" aria-hidden="true"><span class="lg mv">Movimiento</span><span class="lg at">Atacable</span><span class="lg ab">Habilidad</span><span class="lg th">Alcance rival</span><span class="lg fl">Bandera: puesto que cura y da oro</span></div>
+      <div id="tip" role="status"></div>
+      <div id="banner" aria-live="polite"></div>
+      <div id="ticker" aria-live="polite"></div>
+      <div class="zoomctl">
+        <button id="zoom-in" aria-label="Acercar">+</button>
+        <button id="zoom-out" aria-label="Alejar">−</button>
+        <button class="side-toggle" aria-label="Panel de unidad" onclick="document.getElementById('side').classList.toggle('open')">i</button>
+      </div>
+    </div>
+    <aside id="side"><div id="tabs" role="tablist"></div><div id="tabbody"></div><canvas id="mini" width="300" height="270" aria-label="Minimapa"></canvas></aside>
+    <footer id="bottombar"><div id="roster" aria-label="Tu ejército"></div><div id="context"></div><div id="acts"></div></footer>
+  </section>
+
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true"><div class="modal-card" id="modal-card"></div></div>
+  <div id="toast" role="status"></div>
+</div>
+<script src="data.js"></script>
+<script src="maps.js"></script>
+<script src="designs.js"></script>
+<script src="engine.js"></script>
+<script src="ai.js"></script>
+<script src="art.js"></script>
+<script src="audio.js"></script>
+<script src="renderer.js"></script>
+<script src="main.js"></script>
+</body>
+</html>

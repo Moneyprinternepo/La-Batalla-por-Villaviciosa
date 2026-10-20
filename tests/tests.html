@@ -1,0 +1,7 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Pruebas: La Batalla por Villaviciosa</title>
+<style>body{font-family:system-ui,sans-serif;padding:24px;max-width:760px}li.ok{color:#2e7d32}li.ko{color:#c62828}</style></head>
+<body><h1>Pruebas automáticas</h1><p id="st">Ejecutando… (las partidas completas de IA tardan unos segundos)</p><ul id="out"></ul>
+<script src="../src/data.js"></script><script src="../src/maps.js"></script><script src="../src/designs.js"></script><script src="../src/engine.js"></script><script src="../src/ai.js"></script>
+<script src="tests.js"></script>
+<script>const R=window.TEST_RESULTS,o=document.getElementById('out');let nOk=0;R.results.forEach(r=>{const li=document.createElement('li');li.className=r.ok?'ok':'ko';li.textContent=(r.ok?'✔ ':'✘ ')+r.name+(r.ok?'':' → '+r.err);o.appendChild(li);if(r.ok)nOk++;});
+document.getElementById('st').textContent=nOk+'/'+R.results.length+' pruebas superadas. Simulaciones: '+JSON.stringify(R.sims);</script></body></html>
