@@ -127,6 +127,7 @@
     }));
     s.factions.forEach((f, i) => {
       const u = E.makeUnit(s, cfg.factions[i].leader, i, f.keep[0], f.keep[1], { leader: true });
+      u.lvl = Math.min(2, VV.UNITS[u.def].levels.length - 1); u.hp = E.maxHp(u);
       f.leaderId = u.id;
     });
     // Orden de turno: facción inicial aleatoria con la semilla
@@ -280,6 +281,7 @@
   E.attackerMul = function (s, u, w) {
     let m = 1;
     for (const x of u.st) { const S = VV.STATUS[x.id]; if (S.dmg) m *= S.dmg; }
+    for (const n of E.neighborsIdx(s, E.uIdx(s, u))) { const a = E.unitAtIdx(s, n); if (a && a !== u && a.fac === u.fac) { const L = E.passive(a, 'leadership'); if (L) { m *= 1 + L.leadership; break; } } }
     const p = E.passive(u, 'nearSummonMelee');
     if (p && w.r === 'm') {
       const near = E.neighborsIdx(s, E.uIdx(s, u)).some(i => { const a = E.unitAtIdx(s, i); return a && a.summon && a.summon.by === u.id; });
@@ -315,10 +317,15 @@
     const arm = E.armFor(a, aw);
     const di = E.counterIndex(s, a, d, aw);
     const dw = di >= 0 ? E.weapons(d)[di] : null;
+    const charge = aw.sp === 'charge' ? 2 : 1;
+    let back = 1;
+    if (aw.sp === 'backstab') { const ca = Hex.toCube(a.x, a.y), cd = Hex.toCube(d.x, d.y); const [bc, br] = Hex.fromCube(2 * cd[0] - ca[0], 2 * cd[1] - ca[1], 2 * cd[2] - ca[2]); const o = inB(s, bc, br) ? E.unitAt(s, bc, br) : null; if (o && o.fac === a.fac) back = 2; }
+    let aCth = E.cth(s, a, d, arm && arm.acc); if (aw.sp === 'marksman') aCth = Math.max(aCth, 60); if (aw.sp === 'dice') aCth = 55;
+    let dCth = dw ? E.cth(s, d, a, 0) : 0; if (dw && dw.sp === 'dice') dCth = 55;
     return {
-      aw, dw, di,
-      aDmg: E.damage(s, a, d, aw.d, aw.t, aw, arm && arm.dmgMul), aStr: aw.s, aCth: E.cth(s, a, d, arm && arm.acc),
-      dDmg: dw ? E.damage(s, d, a, dw.d, dw.t, dw) : 0, dStr: dw ? dw.s : 0, dCth: dw ? E.cth(s, d, a, 0) : 0, arm
+      aw, dw, di, back, first: dw && dw.sp === 'firststrike' && aw.sp !== 'firststrike',
+      aDmg: E.damage(s, a, d, aw.d, aw.t, aw, (arm && arm.dmgMul || 1) * charge * back), aStr: aw.s, aCth,
+      dDmg: dw ? E.damage(s, d, a, dw.d, dw.t, dw, charge) : 0, dStr: dw ? dw.s : 0, dCth, arm
     };
   };
 
@@ -339,7 +346,7 @@
       }
       dist = nd;
     };
-    for (let k = 0; k < n; k++) { if (k < P.aStr) step(true); if (k < P.dStr) step(false); }
+    for (let k = 0; k < n; k++) { if (P.first) { if (k < P.dStr) step(false); if (k < P.aStr) step(true); } else { if (k < P.aStr) step(true); if (k < P.dStr) step(false); } }
     let aDead = 0, dDead = 0, aExp = 0, dExp = 0;
     for (const [k, p] of dist) {
       const ah = Math.floor(k / 10000), dh = k % 10000;
@@ -359,18 +366,22 @@
     const ev = [{ type: 'combat', att: a.id, def: d.id, aw: P.aw, dw: P.dw }];
     let aHits = 0, dHits = 0, lastHitDmg = 0;
     const n = Math.max(P.aStr, P.dStr);
-    for (let k = 0; k < n && !a.dead && !d.dead; k++) {
-      if (k < P.aStr) {
-        const hit = E.rand(s) * 100 < P.aCth;
-        if (hit) { d.hp -= P.aDmg; aHits++; lastHitDmg = P.aDmg; }
-        ev.push({ type: 'strike', from: a.id, to: d.id, hit, dmg: hit ? P.aDmg : 0, w: P.aw, hp: Math.max(0, d.hp) });
-        if (d.hp <= 0) break;
-      }
-      if (k < P.dStr) {
-        const hit = E.rand(s) * 100 < P.dCth;
-        if (hit) { a.hp -= P.dDmg; dHits++; }
-        ev.push({ type: 'strike', from: d.id, to: a.id, hit, dmg: hit ? P.dDmg : 0, w: P.dw, hp: Math.max(0, a.hp) });
-        if (a.hp <= 0) break;
+    const strikeA = () => {
+      const hit = E.rand(s) * 100 < P.aCth;
+      if (hit) { d.hp -= P.aDmg; aHits++; lastHitDmg = P.aDmg; if (P.aw.sp === 'drain') { const hl = Math.min(Math.floor(P.aDmg / 2), E.maxHp(a) - a.hp); if (hl > 0) { a.hp += hl; ev.push({ type: 'heal', id: a.id, n: hl }); } } }
+      ev.push({ type: 'strike', from: a.id, to: d.id, hit, dmg: hit ? P.aDmg : 0, w: P.aw, hp: Math.max(0, d.hp), ahp: a.hp });
+    };
+    const strikeD = () => {
+      const hit = E.rand(s) * 100 < P.dCth;
+      if (hit) { a.hp -= P.dDmg; dHits++; if (P.dw.sp === 'drain') { const hl = Math.min(Math.floor(P.dDmg / 2), E.maxHp(d) - d.hp); if (hl > 0) { d.hp += hl; ev.push({ type: 'heal', id: d.id, n: hl }); } } }
+      ev.push({ type: 'strike', from: d.id, to: a.id, hit, dmg: hit ? P.dDmg : 0, w: P.dw, hp: Math.max(0, a.hp) });
+    };
+    for (let k = 0; k < n && a.hp > 0 && d.hp > 0; k++) {
+      const order = P.first ? ['d', 'a'] : ['a', 'd'];
+      for (const who of order) {
+        if (a.hp <= 0 || d.hp <= 0) break;
+        if (who === 'a' && k < P.aStr) strikeA();
+        if (who === 'd' && k < P.dStr) strikeD();
       }
     }
     a.attacked = true; a.mp = 0;
@@ -433,6 +444,7 @@
           if (spot != null) { killer.flags.summonTurn = s.turnIndex; E.spawnSummon(s, killer, o.minion, o.group, o.dur, spot, ev); }
         }
       }
+      if (E.passive(killer, 'killInspire')) E.neighborsIdx(s, E.uIdx(s, killer)).forEach(i => { const x = E.unitAtIdx(s, i); if (x && x.fac === killer.fac && x !== killer) { E.addStatus(s, x, 'inspirado', 1); ev.push({ type: 'status', id: x.id, st: 'inspirado' }); } });
       const kg = E.passive(killer, 'killGold');
       if (kg && killer.flags.killGoldRound !== s.round) {
         killer.flags.killGoldRound = s.round; s.factions[killer.fac].gold += kg.killGold;
@@ -482,7 +494,7 @@
     const adj = E.neighborsIdx(s, here);
     const enemyAt = i => { const x = E.unitAtIdx(s, i); return x && x.fac !== u.fac ? x : null; };
     switch (A.kind) {
-      case 'arm': case 'buff': case 'heal': return { mode: 'self', list: [] };
+      case 'arm': case 'buff': case 'heal': case 'drink': return { mode: 'self', list: [] };
       case 'healAlly': return { mode: 'tiles', list: adj.filter(i => { const x = E.unitAtIdx(s, i); return x && x.fac === u.fac && x.hp < E.maxHp(x); }), need: 1 };
       case 'debuff': return { mode: 'tiles', list: adj.filter(i => enemyAt(i)), need: 1 };
       case 'summon': {
@@ -591,6 +603,7 @@
         if (A.evasion) { E.addStatus(s, u, 'evasivo', 1, A.evasion); ev.push({ type: 'status', id: u.id, st: 'evasivo' }); }
         break;
       case 'heal': { const h = Math.min(A.amount, E.maxHp(u) - u.hp); u.hp += h; ev.push({ type: 'heal', id: u.id, n: h }); break; }
+      case 'drink': { const h = Math.min(A.amount, E.maxHp(u) - u.hp); if (h > 0) { u.hp += h; ev.push({ type: 'heal', id: u.id, n: h }); } E.addStatus(s, u, 'mareado', 1); ev.push({ type: 'status', id: u.id, st: 'mareado' }); xpGain = A.xp; break; }
       case 'healAlly': { const x = E.unitAtIdx(s, targets[0]); const h = Math.min(A.amount, E.maxHp(x) - x.hp); x.hp += h; ev.push({ type: 'heal', id: x.id, n: h }); xpGain = 1; break; }
       case 'debuff': { const x = enemyAt(targets[0]); E.addStatus(s, x, A.status, 1); ev.push({ type: 'status', id: x.id, st: A.status, from: u.id });
         if (A.arm) u.armed = Object.assign({ src: id }, A.arm); xpGain = 1; break; }
@@ -784,6 +797,8 @@
       let heal = 0;
       if (t.prop >= 0 && s.props[t.prop].heal) { heal = s.props[t.prop].heal; if (f.id === 'ast' && s.props[t.prop].owner === fac) heal += 1; }
       else if (u.rested) heal = 2;
+      const rg = E.passive(u, 'regen'); if (rg) heal = Math.max(heal, rg.regen);
+      for (const n of E.neighborsIdx(s, E.uIdx(s, u))) { const x = E.unitAtIdx(s, n); if (x && x.fac === fac && x !== u) { const hp = E.passive(x, 'heals'); if (hp) heal = Math.max(heal, hp.heals); } }
       heal = Math.min(heal, f.id === 'ast' ? 9 : 8, E.maxHp(u) - u.hp);
       if (heal > 0) { u.hp += heal; ev.push({ type: 'heal', id: u.id, n: heal }); }
       // Afinidad con las barricas (Tío Guillermo)
@@ -869,6 +884,14 @@
         for (let k = 0; k < 10 && pool.length; k++) pick.push(pool.splice(Math.floor(E.rand(s) * pool.length), 1)[0]);
         pick.forEach(i => { s.overlays[i] = Object.assign(s.overlays[i] || {}, { puddle: s.turnIndex + nf * 2 + 1 }); });
         hit.push({ tiles: pick });
+      } else if (id === 'mareaalta') {
+        s.tiles.forEach((t, i) => { if (t.t === 'sand') s.overlays[i] = Object.assign(s.overlays[i] || {}, { puddle: s.turnIndex + nf * 2 + 1 }); });
+        hit.push({ tiles: [] });
+      } else if (id === 'desembarco') {
+        const c = M.lonja; E.living(s).forEach(u => { if (Hex.dist(u.x, u.y, c[0], c[1]) <= 2) { E.addStatus(s, u, 'inspirado', 1); hit.push({ id: u.id, st: 'inspirado' }); } });
+      } else if (id === 'sardinada') {
+        const near = new Set(); s.props.forEach(p => { if (p.kind === 'marinera') { const i = I(s, p.c, p.r); near.add(i); E.neighborsIdx(s, i).forEach(n => near.add(n)); } });
+        E.living(s).forEach(u => { if (near.has(E.uIdx(s, u))) { const h = Math.min(3, E.maxHp(u) - u.hp); if (h > 0) { u.hp += h; hit.push({ id: u.id, heal: h }); } } });
       } else if (id === 'campanada' || id === 'subidon') {
         const c = id === 'campanada' ? M.teatro : M.stage;
         E.living(s).forEach(u => { if (Hex.dist(u.x, u.y, c[0], c[1]) <= 2) { E.addStatus(s, u, 'inspirado', 1); hit.push({ id: u.id, st: 'inspirado' }); } });

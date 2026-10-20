@@ -108,7 +108,18 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
 .evo-arrow { font-family: var(--font-d); font-size: 26px; color: var(--muted); }
 
 /* Ayuda */
-.help { max-width: 72ch; } .help h3 { margin-top: 1.1em; } .help p, .help li { line-height: 1.55; }
+.help { max-width: 1100px; } .help > h3 { margin-top: 1.4em; } .help p, .help li { line-height: 1.5; } .help .lead { font-size: 17px; max-width: 70ch; }
+.help-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin-top: 14px; }
+.help-card { background: var(--panel); border: 2px solid var(--line); border-radius: 6px; padding: 12px 14px 14px; position: relative; }
+.help-card.wide { grid-column: 1 / -1; }
+.help-card h3 { font-size: 17px; margin: 2px 0 8px 34px; }
+.hc-n { position: absolute; left: 10px; top: 9px; width: 26px; height: 26px; border-radius: 50%; background: var(--teja); color: #fff6e6; font-family: var(--font-d); display: flex; align-items: center; justify-content: center; }
+.help-ill { display: block; width: 100%; max-width: 230px; height: auto; margin: 0 auto 8px; background: #2b3a2a; border-radius: 4px; border: 2px solid #1c1424; }
+.help-card p { margin: 0; font-size: 14px; }
+.traits { columns: 2 300px; padding-left: 18px; margin: 0; } .traits li { margin-bottom: 6px; font-size: 14px; break-inside: avoid; }
+.keys { display: flex; flex-wrap: wrap; gap: 8px; }
+.key { display: flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 5px 9px; font-size: 14px; }
+kbd { font-family: var(--font-d); background: #f4eedf; color: #2a2620; border: 1px solid #8a7a5c; border-bottom-width: 3px; border-radius: 4px; padding: 1px 7px; }
 .terr { border-collapse: collapse; } .terr td, .terr th { border-bottom: 1px solid var(--line); padding: 4px 14px 4px 0; text-align: left; }
 
 /* ---------- Batalla ---------- */
@@ -361,6 +372,8 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
     puddle: { n: 'Charco', cost: 2, def: 20 },
     dance: { n: 'Pista de baile', cost: 1, def: 20, open: true },
     stage: { n: 'Escenario', cost: 1, def: 40 },
+    sand: { n: 'Arena de playa', cost: 2, def: 30, open: true },
+    rock: { n: 'Acantilado', cost: 99, def: 0 },
     tables: { n: 'Barrera de mesas', cost: 99, def: 0 },
     wall: { n: 'Edificio cerrado', cost: 99, def: 0 },
     water: { n: 'Agua profunda', cost: 99, def: 0 }
@@ -368,8 +381,8 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
 
   VV.ARCH = {
     infantry: { n: 'Infantería', cost: {}, def: {} },
-    agile: { n: 'Ágil', cost: { park: -1, mud: -1 }, def: { park: 10 } },
-    tank: { n: 'Tanque', cost: { park: 1, mud: 1 }, def: {}, cap: 50 },
+    agile: { n: 'Ágil', cost: { park: -1, mud: -1, sand: -1 }, def: { park: 10 } },
+    tank: { n: 'Tanque', cost: { park: 1, mud: 1, sand: 1 }, def: {}, cap: 50 },
     mystic: { n: 'Místico', cost: {}, def: { cover: 5 } },
     support: { n: 'Apoyo', cost: {}, def: { tavern: 5 } }
   };
@@ -452,6 +465,11 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
   ab('bodega', { n: 'Bodega interminable', kind: 'heal', cd: 4, amount: 6, d: 'Se cura 6 PV usando su acción.' });
   ab('gran_cosecha', { n: 'LA GRAN COSECHA', kind: 'attack', cd: 5, ult: true, target: 'all_adj', custom: { d: 12, s: 2, t: 'imp' }, healPerTarget: 3, healMax: 12, fx: 'barrel', d: '12×2 de impacto a todos los adyacentes; se cura 3 PV por objetivo alcanzado (máx. 12).' });
   ab('tabernero', { n: 'Afinidad con las barricas', kind: 'passive', tavernXP: 3, d: '+3 XP al empezar turno en una barra o sidrería controlada (una vez cada dos rondas).' });
+  ab('beber', { n: 'Beber vino', kind: 'drink', cd: 2, xp: 7, amount: 4, d: 'Da un trago largo: gana 7 XP y cura 4 PV, pero queda Mareado una ronda. Así asciende de Tío Guillermo a Emperador del Tempranillo.' });
+  ab('brindis', { n: 'Brindis de victoria', kind: 'passive', killInspire: 1, d: 'Cuando elimina a un enemigo, sus aliados adyacentes quedan Inspirados.' });
+  ab('inspiracion', { n: 'Musa literaria', kind: 'passive', leadership: 0.15, d: 'Los aliados adyacentes hacen +15 % de daño.' });
+  ab('piedra', { n: 'Cuerpo de piedra', kind: 'passive', regen: 4, d: 'Recupera 4 PV al empezar cada turno, aunque haya combatido.' });
+  ab('concierto', { n: 'Concierto de cabecera', kind: 'passive', heals: 4, d: 'Los aliados adyacentes recuperan 4 PV al empezar su turno.' });
   ab('grito_guerra', { n: 'Grito de guerra', kind: 'buff', cd: 3, status: 'inspirado', d: 'Gana Inspirado durante una ronda.' });
   ab('patada_circular', { n: 'Patada circular', kind: 'attack', cd: 4, target: 'two', custom: { d: 8, s: 2, t: 'imp' }, fx: 'kick', d: 'Ataca a dos enemigos adyacentes con 8×2 impacto cada uno.' });
   ab('patada_estrato', { n: 'PATADA ESTRATOSFÉRICA', kind: 'leap', cd: 5, ult: true, range: 2, then: { d: 12, s: 2, t: 'imp' }, fx: 'kick', d: 'Salta a un hexágono libre a dos casillas y golpea con 12×2 a un enemigo adyacente al destino.' });
@@ -489,7 +507,7 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
   const HR = { blond: '#ecc24a', black: '#1d1a24', brown: '#5b3a22', dbrown: '#3a2416', grey: '#c8c8ce', white: '#f4f4f0' };
 
   // ---------- ASTURES ----------
-  def('ramon', { fac: 'ast', kind: 'hero', arch: 'infantry', align: 'n', cost: 18, res: { pro: 15 }, cls: 'Guerrero escanciador',
+  def('ramon', { fac: 'ast', kind: 'hero', arch: 'infantry', align: 'n', cost: 22, res: { pro: 15 }, cls: 'Guerrero escanciador',
     desc: 'Nadie sabe cuántas copas le quedan. Probablemente ni él.', fx: 'cup',
     levels: [
       L('Ramón', 36, 5, 26, [W('Vaso en la frente', 'm', 5, 2, 'imp', 'fist'), W('Lanzamiento de copa', 'd', 6, 3, 'pro', 'cup')], ['ronda_bienvenida']),
@@ -497,44 +515,44 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
       L('Don Ramón', 60, 5, null, [W('Vaso en la frente', 'm', 9, 2, 'imp', 'fist'), W('Lanzamiento de copa', 'd', 11, 3, 'pro', 'cupbig')], ['ultima_ronda'])
     ] });
 
-  def('pilar', { fac: 'ast', kind: 'hero', arch: 'agile', align: 'n', cost: 18, defBonus: 10, cls: 'Arquera de hámster',
+  def('pilar', { fac: 'ast', kind: 'hero', arch: 'agile', align: 'n', cost: 22, defBonus: 10, cls: 'Arquera de hámster',
     desc: 'Puchi no pidió participar en esta guerra. Ahora es artillería.', fx: 'hamster',
     levels: [
-      L('Pilar', 28, 6, 25, [W('Puñetín', 'm', 3, 2, 'imp', 'fist'), W('¡Puchi, vuela!', 'd', 7, 3, 'pro', 'hamster')], ['rebote_puchi']),
+      L('Pilar', 32, 6, 25, [W('Puñetín', 'm', 3, 2, 'imp', 'fist'), W('¡Puchi, vuela!', 'd', 8, 3, 'pro', 'hamster')], ['rebote_puchi']),
       L('Pilarina', 36, 7, 40, [W('Puñetín', 'm', 4, 2, 'imp', 'fist'), W('¡Puchi, vuela!', 'd', 9, 3, 'pro', 'hamster2')], ['puchi_bumeran']),
       L('La Pilu', 48, 7, null, [W('Puñetín', 'm', 5, 2, 'imp', 'fist'), W('¡Puchi, vuela!', 'd', 11, 3, 'pro', 'hamster3')], ['puchi_supersonico'])
     ] });
 
-  def('teresa', { fac: 'ast', kind: 'hero', arch: 'agile', align: 'n', cost: 22, cls: 'Berserker invocadora',
+  def('teresa', { fac: 'ast', kind: 'hero', arch: 'agile', align: 'n', cost: 16, cls: 'Berserker invocadora',
     desc: 'Si escuchas «¡CHAVALES!», ya es demasiado tarde.', fx: 'fist', res: { cut: -15 }, terrainBonus: { open: 5 },
     levels: [
-      L('Teresa', 32, 7, 26, [W('Hostia de confianza', 'm', 8, 2, 'imp', 'fist')], ['chavales']),
+      L('Teresa', 36, 7, 26, [W('Hostia de confianza', 'm', 8, 2, 'imp', 'fist')], ['chavales']),
       L('Terelu', 44, 7, 40, [W('Hostia de confianza', 'm', 10, 2, 'imp', 'fist')], ['pandilla']),
       L('Tereso', 58, 8, null, [W('Hostia de confianza', 'm', 12, 3, 'imp', 'fist')], ['todas_a_una'])
     ] });
 
-  def('carlota', { fac: 'ast', kind: 'hero', arch: 'tank', align: 'l', cost: 27, defBonus: -10, cls: 'Tanque y luchadora de puños',
+  def('carlota', { fac: 'ast', kind: 'hero', arch: 'tank', align: 'l', cost: 23, defBonus: -10, cls: 'Tanque y luchadora de puños',
     desc: 'La mejor negociación empieza con un puñetazo.', fx: 'fist', res: { imp: 20 },
     levels: [
       L('Carlota', 52, 4, 32, [W('Puñetazo de Carlota', 'm', 10, 2, 'imp', 'fist')], ['aqui_no_pasa']),
       L('Charlotte', 72, 4, null, [W('Puñetazo de Charlotte', 'm', 14, 3, 'imp', 'fist')], ['terremoto'])
     ] });
 
-  def('tia_carlota', { fac: 'ast', kind: 'hero', arch: 'support', align: 'n', cost: 19, res: { imp: 10 }, cls: 'Maga decoradora',
+  def('tia_carlota', { fac: 'ast', kind: 'hero', arch: 'support', align: 'n', cost: 23, res: { imp: 10 }, cls: 'Maga decoradora',
     desc: 'Te va a reformar la casa. Y la cara.', fx: 'cushion',
     levels: [
       L('Tía Carlota', 35, 5, 27, [W('Lámpara contundente', 'm', 5, 2, 'imp', 'fist'), W('Cojines a domicilio', 'd', 6, 3, 'pro', 'cushion')], ['cambio_deco']),
       L('CEO de Inzu Deco', 49, 5, null, [W('Lámpara contundente', 'm', 6, 2, 'imp', 'fist'), W('Cojines a domicilio', 'd', 9, 3, 'pro', 'cushion')], ['reforma_integral'])
     ] });
 
-  def('tia_carmen', { fac: 'ast', kind: 'hero', arch: 'support', align: 'n', cost: 19, cls: 'Controladora táctica',
+  def('tia_carmen', { fac: 'ast', kind: 'hero', arch: 'support', align: 'n', cost: 17, cls: 'Controladora táctica',
     desc: 'Nunca aceptes jugar una partida con ella.', fx: 'dice',
     levels: [
-      L('Tía Carmen', 34, 5, 27, [W('Tablero en la cara', 'm', 4, 2, 'imp', 'fist'), W('Dados del Catán', 'd', 6, 3, 'psi', 'dice')], ['te_toca_perder']),
+      L('Tía Carmen', 34, 5, 27, [W('Tablero en la cara', 'm', 4, 2, 'imp', 'fist'), W('Dados del Catán', 'd', 7, 3, 'psi', 'dice')], ['te_toca_perder']),
       L('La Mamen', 47, 5, null, [W('Tablero en la cara', 'm', 5, 2, 'imp', 'fist'), W('Dados del Catán', 'd', 8, 3, 'psi', 'dice')], ['monopolio'])
     ] });
 
-  def('pooh', { fac: 'ast', kind: 'hero', arch: 'agile', align: 'c', cost: 18, defBonus: 10, cls: 'Bestia mutante del caos',
+  def('pooh', { fac: 'ast', kind: 'hero', arch: 'agile', align: 'c', cost: 20, defBonus: 10, cls: 'Bestia mutante del caos',
     desc: 'Pesa tres kilos. Aparentemente contiene un demonio.', fx: 'vomit', res: { cha: 20 },
     levels: [
       L('Pooh', 29, 7, 25, [W('Espasmo inesperado', 'm', 5, 2, 'imp', 'bite'), W('Vómito traicionero', 'd', 6, 3, 'cha', 'vomit')], ['accidente']),
@@ -543,7 +561,7 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
     ] });
 
   // ---------- MADRILES ----------
-  def('pedro', { fac: 'mad', kind: 'hero', arch: 'mystic', align: 'c', cost: 23, cls: 'Nigromante de la chapa',
+  def('pedro', { fac: 'mad', kind: 'hero', arch: 'mystic', align: 'c', cost: 27, cls: 'Nigromante de la chapa',
     desc: 'Su arma más poderosa es una conversación sin final.', fx: 'talk',
     levels: [
       L('Pedro', 32, 5, 30, [W('Codazo explicativo', 'm', 3, 2, 'imp', 'fist'), W('Dar la chapa', 'd', 7, 3, 'psi', 'talk')], ['interlocutor']),
@@ -551,38 +569,38 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
       L('Pedrito Melenas, el Rey de las Nenas', 57, 5, null, [W('Codazo explicativo', 'm', 5, 2, 'imp', 'fist'), W('Dar la chapa', 'd', 11, 3, 'psi', 'talk')], ['conferencia'], { res: { psi: 30 } })
     ] });
 
-  def('carlos', { fac: 'mad', kind: 'hero', arch: 'mystic', align: 'n', cost: 14, cls: 'Escritor hechicero',
+  def('carlos', { fac: 'mad', kind: 'hero', arch: 'mystic', align: 'n', cost: 22, cls: 'Escritor hechicero',
     desc: 'Ha escrito doce novelas. Nadie ha terminado la primera.', fx: 'papers',
     levels: [
-      L('Carlos', 29, 5, 25, [W('Golpe de manuscrito', 'm', 4, 2, 'imp', 'papers'), W('Escribir un libro malo', 'd', 6, 3, 'psi', 'papers')], ['primer_borrador']),
+      L('Carlos', 31, 5, 25, [W('Golpe de manuscrito', 'm', 4, 2, 'imp', 'papers'), W('Escribir un libro malo', 'd', 7, 3, 'psi', 'papers')], ['primer_borrador']),
       L('Carlangas', 38, 5, 40, [W('Golpe de manuscrito', 'm', 4, 2, 'imp', 'papers'), W('Escribir un libro malo', 'd', 8, 3, 'psi', 'papers')], ['spoiler']),
       L('Carlitos Gormiti, el Rey de las Titis', 51, 5, null, [W('Golpe de manuscrito', 'm', 6, 2, 'imp', 'papers'), W('Escribir un libro malo', 'd', 10, 3, 'psi', 'papers')], ['trilogia'])
     ] });
 
-  def('guille', { fac: 'mad', kind: 'hero', arch: 'infantry', align: 'l', cost: 13, defBonus: 5, res: { cut: -10 }, cls: 'Berserker de transformación',
+  def('guille', { fac: 'mad', kind: 'hero', arch: 'infantry', align: 'l', cost: 17, defBonus: 5, res: { cut: -10 }, cls: 'Berserker de transformación',
     desc: 'Solo quería que parasen.', fx: 'fist',
     levels: [
-      L('Guille', 30, 6, 25, [W('Oye, ¿puedes parar?', 'm', 5, 3, 'imp', 'fist')], ['dejame']),
+      L('Guille', 30, 6, 25, [W('Oye, ¿puedes parar?', 'm', 6, 3, 'imp', 'fist')], ['dejame']),
       L('Guilletón', 66, 5, null, [W('Oye, ¿puedes parar?', 'm', 13, 3, 'imp', 'fist')], ['te_he_dicho'])
     ] });
 
-  def('tia_maria', { fac: 'mad', kind: 'hero', arch: 'support', align: 'n', cost: 20, cls: 'Sacerdotisa del rock',
+  def('tia_maria', { fac: 'mad', kind: 'hero', arch: 'support', align: 'n', cost: 29, cls: 'Sacerdotisa del rock',
     desc: 'No necesita un ejército cuando tiene un concierto.', fx: 'vinyl', vetCost: [25, 35, 45],
     levels: [
       L('Tía María', 38, 5, null, [W('Vinilo arrojadizo', 'm', 4, 2, 'imp', 'vinyl'), W('Rock del Boss', 'd', 7, 3, 'psi', 'notes')], ['boss'])
     ] });
 
-  def('tio_guillermo', { fac: 'mad', kind: 'hero', arch: 'tank', align: 'n', cost: 26, defBonus: -10, cls: 'Titán del vino',
+  def('tio_guillermo', { fac: 'mad', kind: 'hero', arch: 'tank', align: 'n', cost: 20, defBonus: -10, cls: 'Titán del vino',
     desc: 'La Gran Reserva nunca se rinde.', fx: 'wine',
     levels: [
-      L('Tío Guillermo', 47, 4, 20, [W('Sombrerazo australiano', 'm', 8, 2, 'imp', 'fist'), W('Brindis rotundo', 'd', 5, 2, 'psi', 'wine')], ['tabernero']),
+      L('Tío Guillermo', 36, 4, 20, [W('Sombrerazo australiano', 'm', 6, 2, 'imp', 'fist'), W('Brindis rotundo', 'd', 4, 2, 'psi', 'wine')], ['tabernero']),
       L('Guillermo Reserva', 54, 4, 28, [W('Sombrerazo australiano', 'm', 9, 2, 'imp', 'fist'), W('Brindis rotundo', 'd', 6, 2, 'psi', 'wine')], ['cata']),
       L('Don Guillermo Crianza', 62, 4, 38, [W('Sombrerazo australiano', 'm', 11, 2, 'imp', 'fist'), W('Brindis rotundo', 'd', 7, 2, 'psi', 'wine')], ['barrica']),
       L('Guillermo Gran Reserva', 72, 4, 52, [W('Sombrerazo australiano', 'm', 12, 3, 'imp', 'fist'), W('Brindis rotundo', 'd', 8, 2, 'psi', 'wine')], ['bodega']),
       L('Emperador del Tempranillo', 84, 5, null, [W('Sombrerazo australiano', 'm', 14, 3, 'imp', 'fist'), W('Brindis rotundo', 'd', 9, 3, 'psi', 'wine')], ['gran_cosecha'], { res: { psi: 10 } })
     ] });
 
-  def('ponchu', { fac: 'mad', kind: 'hero', arch: 'agile', align: 'c', cost: 19, defBonus: 10, cls: 'Monje de combate',
+  def('ponchu', { fac: 'mad', kind: 'hero', arch: 'agile', align: 'c', cost: 24, defBonus: 10, cls: 'Monje de combate',
     desc: 'Pide silencio gritando.', fx: 'kick',
     levels: [
       L('Ponchu', 33, 6, 28, [W('Patada voladora', 'm', 8, 2, 'imp', 'kick'), W('GRITAR MUY FUERTE', 'd', 5, 2, 'psi', 'shout')], ['grito_guerra']),
@@ -590,17 +608,17 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
       L('Alfonso Escribano', 59, 7, null, [W('Patada voladora', 'm', 12, 3, 'imp', 'kick'), W('GRITAR MUY FUERTE', 'd', 8, 3, 'psi', 'shout')], ['patada_estrato'])
     ] });
 
-  def('dantart', { fac: 'mad', kind: 'hero', arch: 'infantry', align: 'n', cost: 13, defBonus: 5, cls: 'Unidad colectiva',
+  def('dantart', { fac: 'mad', kind: 'hero', arch: 'infantry', align: 'n', cost: 14, defBonus: 5, cls: 'Unidad colectiva',
     desc: 'Uno solo es peligroso. Cuatro requieren un seguro.', fx: 'fist',
     levels: [
-      L('Los Dantart (1/4)', 27, 6, 20, [W('Golpe de hermano', 'm', 5, 3, 'imp', 'fist')], []),
+      L('Los Dantart (1/4)', 27, 6, 20, [W('Golpe de hermano', 'm', 6, 3, 'imp', 'fist')], []),
       L('Los Dantart (2/4)', 38, 6, 30, [W('Golpe de hermano', 'm', 6, 4, 'imp', 'fist')], ['relevo']),
       L('Los Dantart (3/4)', 51, 6, 40, [W('Golpe de hermano', 'm', 7, 4, 'imp', 'fist'), W('Bombardeo fraternal', 'd', 5, 2, 'pro', 'rocks')], []),
       L('Los Dantart (4/4)', 66, 6, null, [W('Golpe de hermano', 'm', 8, 5, 'imp', 'fist'), W('Bombardeo fraternal', 'd', 7, 3, 'pro', 'rocks')], ['familia'], { res: { imp: 10 } })
     ] });
 
   // ---------- VERANEANTES ----------
-  def('santiago', { fac: 'ver', kind: 'hero', arch: 'tank', align: 'l', cost: 30, defBonus: -15, cls: 'Superpesado',
+  def('santiago', { fac: 'ver', kind: 'hero', arch: 'tank', align: 'l', cost: 27, defBonus: -15, cls: 'Superpesado',
     desc: 'Una montaña con gafas.', fx: 'quake',
     levels: [
       L('Santiago Vidao', 62, 3, 30, [W('Pisotón monumental', 'm', 11, 2, 'imp', 'quake')], ['muro']),
@@ -608,7 +626,7 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
       L('La Montaña de Maliayo', 91, 3, null, [W('Pisotón monumental', 'm', 15, 3, 'imp', 'quake')], ['montana'], { res: { imp: 25 } })
     ] });
 
-  def('mario', { fac: 'ver', kind: 'hero', arch: 'support', align: 'n', cost: 22, res: { pro: 15 }, cls: 'Mercader guerrero',
+  def('mario', { fac: 'ver', kind: 'hero', arch: 'support', align: 'n', cost: 25, res: { pro: 15 }, cls: 'Mercader guerrero',
     desc: 'La cuenta siempre llega.', fx: 'coins',
     levels: [
       L('Mario de la Avenida', 35, 5, 27, [W('Bandejazo', 'm', 5, 2, 'imp', 'tray'), W('Lluvia de propinas', 'd', 7, 3, 'pro', 'coins')], ['cuenta_cerrada']),
@@ -616,7 +634,7 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
       L('El Señor de la Avenida', 58, 6, null, [W('Bandejazo', 'm', 8, 2, 'imp', 'tray'), W('Lluvia de propinas', 'd', 11, 3, 'pro', 'coins')], ['enterrado'])
     ] });
 
-  def('chanchenchi', { fac: 'ver', kind: 'hero', arch: 'agile', align: 'n', cost: 22, defBonus: 10, cls: 'Asesino escaramuzador',
+  def('chanchenchi', { fac: 'ver', kind: 'hero', arch: 'agile', align: 'n', cost: 23, defBonus: 10, cls: 'Asesino escaramuzador',
     desc: 'Si lo ves, es porque ya se ha ido.', fx: 'knife', res: { imp: -15 },
     levels: [
       L('Chanchenchi', 30, 7, 26, [W('Navajita relámpago', 'm', 8, 3, 'cut', 'knife'), W('Reflejo metálico', 'd', 4, 2, 'psi', 'glint')], ['escurridizo']),
@@ -624,7 +642,7 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
       L('La Sombra del Prao', 50, 8, null, [W('Navajita relámpago', 'm', 12, 3, 'cut', 'knife'), W('Reflejo metálico', 'd', 6, 3, 'psi', 'glint')], ['no_me_has_visto'])
     ] });
 
-  def('kepa_nikola', { fac: 'ver', kind: 'hero', arch: 'infantry', align: 'n', cost: 27, res: { imp: 10 }, cls: 'Luchadores de equipo',
+  def('kepa_nikola', { fac: 'ver', kind: 'hero', arch: 'infantry', align: 'n', cost: 19, res: { imp: 10 }, cls: 'Luchadores de equipo',
     desc: 'La negociación acaba en suplex.', fx: 'quake',
     levels: [
       L('Kepa & Nikola', 43, 5, 32, [W('Suplex fraternal', 'm', 9, 2, 'imp', 'quake')], ['llave_vasca']),
@@ -632,7 +650,7 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
       L('La Dupla Imparable', 70, 5, null, [W('Suplex fraternal', 'm', 13, 3, 'imp', 'quake'), W('Silla de campeonato', 'd', 6, 2, 'pro', 'chair')], ['suplex'])
     ] });
 
-  def('tio_tony', { fac: 'ver', kind: 'hero', arch: 'support', align: 'n', cost: 24, defBonus: -5, cls: 'Oráculo de los improperios',
+  def('tio_tony', { fac: 'ver', kind: 'hero', arch: 'support', align: 'n', cost: 20, defBonus: -5, cls: 'Oráculo de los improperios',
     desc: 'Su vocabulario es un arma de destrucción masiva.', fx: 'shout', res: { psi: 20 },
     levels: [
       L('Tío Tony', 39, 4, 25, [W('Bastón imperativo', 'm', 5, 2, 'imp', 'fist'), W('¡BRUJA!', 'd', 8, 2, 'psi', 'shout')], ['tu_ven_aqui']),
@@ -640,7 +658,7 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
       L('Tony, Azote de Brujas', 65, 5, null, [W('Bastón imperativo', 'm', 7, 2, 'imp', 'fist'), W('¡BRUJA!', 'd', 12, 3, 'psi', 'shout')], ['brujaaa'])
     ] });
 
-  def('castro', { fac: 'ver', kind: 'hero', arch: 'mystic', align: 'n', cost: 23, res: { cha: 10 }, cls: 'Invocador aristocrático',
+  def('castro', { fac: 'ver', kind: 'hero', arch: 'mystic', align: 'n', cost: 25, res: { cha: 10 }, cls: 'Invocador aristocrático',
     desc: 'Su puma tiene mejor pedigrí que tú.', fx: 'relic',
     levels: [
       L('Castro', 34, 5, 27, [W('Bastón de señorito', 'm', 5, 2, 'imp', 'fist'), W('Reliquia carísima', 'd', 7, 3, 'pro', 'relic')], ['puma']),
@@ -648,7 +666,7 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
       L('Emperador del Brilli-Brilli', 58, 6, null, [W('Bastón de señorito', 'm', 9, 2, 'imp', 'fist'), W('Reliquia carísima', 'd', 11, 3, 'pro', 'relic')], ['felino'])
     ] });
 
-  def('changel', { fac: 'ver', kind: 'hero', arch: 'agile', align: 'c', cost: 24, defBonus: 5, cls: 'Bailarín guerrero',
+  def('changel', { fac: 'ver', kind: 'hero', arch: 'agile', align: 'c', cost: 21, defBonus: 5, cls: 'Bailarín guerrero',
     desc: 'Puede que pierdas la batalla, pero no el ritmo.', fx: 'dance', terrainBonus: { dance: 10 },
     levels: [
       L('Changel', 32, 7, 26, [W('Zapateo mortal', 'm', 7, 3, 'imp', 'kick'), W('Mirada de bachata', 'd', 4, 2, 'psi', 'hearts')], ['pasito']),
@@ -667,6 +685,25 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
   minion('puma', 'ver', 'Puma de Diseño', 'agile', 18, 6, [W('Zarpazo de diseño', 'm', 6, 2, 'cut', 'claw')], 'Tiene más seguidores que tú.');
   minion('puma2', 'ver', 'Puma con Pedigrí', 'agile', 25, 6, [W('Zarpazo de diseño', 'm', 8, 2, 'cut', 'claw')], 'Collar ceremonial y certificado de origen.');
   minion('puma3', 'ver', 'Puma Imperial', 'agile', 35, 6, [W('Zarpazo imperial', 'm', 10, 2, 'cut', 'claw')], 'Armadura dorada. Desprecio absoluto.');
+
+  /* ---------- Rasgos únicos ---------- */
+  VV.WSPECIAL = {
+    marksman: { n: 'Puntería', d: 'Al atacar, nunca baja del 60 % de probabilidad de impacto.' },
+    drain: { n: 'Absorber', d: 'Recupera la mitad del daño que inflige.' },
+    charge: { n: 'Carga', d: 'Al atacar con ella, ambos bandos hacen el doble de daño.' },
+    backstab: { n: 'Por la espalda', d: 'Daño doble si hay un aliado al otro lado del objetivo.' },
+    firststrike: { n: 'Primer golpe', d: 'Golpea siempre primero, también al defenderse.' },
+    dice: { n: 'Azar', d: 'Siempre 55 % de probabilidad de impacto, sin importar el terreno.' }
+  };
+  const special = (id, wname, sp, fromLvl) => U[id].levels.forEach((L, i) => { if (i >= (fromLvl || 0)) L.w.forEach(w => { if (w.n === wname) w.sp = sp; }); });
+  special('pilar', '¡Puchi, vuela!', 'marksman');
+  special('pedro', 'Dar la chapa', 'drain');
+  special('ponchu', 'Patada voladora', 'charge');
+  special('chanchenchi', 'Navajita relámpago', 'backstab');
+  special('guille', 'Oye, ¿puedes parar?', 'firststrike', 1);
+  special('tia_carmen', 'Dados del Catán', 'dice');
+  const trait = (id, ab) => U[id].levels[0].ab.unshift(ab);
+  trait('ramon', 'brindis'); trait('carlos', 'inspiracion'); trait('santiago', 'piedra'); trait('tia_maria', 'concierto'); trait('tio_guillermo', 'beber');
 
   VV.HEROES = { ast: [], mad: [], ver: [] };
   Object.values(U).forEach(u => { if (u.kind === 'hero') VV.HEROES[u.fac].push(u.id); });
@@ -711,7 +748,8 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
     M: { t: 'mud' }, d: { t: 'dance' }, t: { t: 'grass', obstacle: 'tables' }, '=': { t: 'street' },
     S: { t: 'tavern', prop: 'sidreria' }, G: { t: 'plaza', prop: 'guevu' }, R: { t: 'cover', prop: 'palco' },
     I: { t: 'cover', prop: 'iglesia' }, A: { t: 'plaza', prop: 'abastos' }, c: { t: 'tavern', prop: 'caseta' },
-    X: { t: 'tavern', prop: 'barra' }, E: { t: 'stage', prop: 'escenario' }, F: { t: 'grass', prop: 'banderines' }
+    X: { t: 'tavern', prop: 'barra' }, E: { t: 'stage', prop: 'escenario' }, F: { t: 'grass', prop: 'banderines' },
+    B: { t: 'sand' }, '^': { t: 'rock' }, P: { t: 'tavern', prop: 'marinera' }, L: { t: 'cover', prop: 'faro' }, O: { t: 'plaza', prop: 'lonja' }
   };
 
   VV.PROPKINDS = {
@@ -723,6 +761,9 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
     caseta: { gold: 2, heal: 8, bar: true, d: 'Puesto con bandera: caseta de peña que cura 8 PV y da 2 de oro.' },
     barra: { gold: 3, heal: 8, bar: true, d: 'Puesto con bandera: la Gran Barra cura 8 PV y da 3 de oro.' },
     escenario: { gold: 2, heal: 8, def: 5, d: 'Puesto con bandera: cura 8 PV, da oro y +5 de defensa en la plataforma.' },
+    marinera: { gold: 2, heal: 8, bar: true, d: 'Puesto con bandera: casa marinera que cura 8 PV y da 2 de oro.' },
+    faro: { gold: 2, heal: 8, def: 10, d: 'Puesto con bandera: el faro cura 8 PV, da oro y +10 de defensa a quien lo ocupa.' },
+    lonja: { gold: 4, heal: 8, d: 'Puesto con bandera: la lonja cura 8 PV y da 4 de oro por ronda.' },
     banderines: { gold: 4, heal: 8, d: 'Puesto con bandera: cura 8 PV y da 4 de oro por ronda.' }
   };
 
@@ -810,6 +851,55 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
       stage: [14, 2],
       charanga: 7,
       events: 'xiringuelu'
+    },
+    tazones: {
+      n: 'El Puerto de Tazones',
+      sub: 'Pueblo marinero del concejo de Villaviciosa: casas de colores, playas, acantilados y dos faros. Dieciocho puestos con bandera.',
+      rows: [
+        'WWWWWWWWWWWWWWWWWWWWWWWWWWWW',
+        'W^^WWWWWWWWWWWWWWWWWWWWWW^^W',
+        '^^L^WWBBWWWWWWWWWWWWBBWW^L^^',
+        '^gg^BBBBBBWWWWWWWWBBBBBB^gg^',
+        'gg.g.BBP.B#WWWWWW#B.PBB.g.gg',
+        'TTg..a.##.##.O..##.##.a..gTT',
+        'TTg.a..##..a....a..##..a.gTT',
+        'gCC..P...##......##...P..CCg',
+        'gKC.....a##.,,,,.##a.....CKg',
+        'gCC.T..a....,,,,....a..T.CCg',
+        'ggTT..##..##....##..##..TTgg',
+        'gTTT..##.P##.I..##P.##..TTTg',
+        'ggT...a..............a...Tgg',
+        'gg..P..TTT..####..TTT..P..gg',
+        'g..MM.TTTTT.####.TTTTT.MM..g',
+        'gP.MM..TT...P..P...TT..MM.Pg',
+        'ggg...gg..gggggggg..gg...ggg',
+        'TTgggTTgggPggggggPgggTTgggTT',
+        'TTTggTTTggggggggggggTTTggTTT',
+        'TTTTgTTTTggggggggggTTTTgTTTT'
+      ],
+      names: {
+        '2,2': 'Faro de Poniente', '25,2': 'Faro de Levante', '13,5': 'La Lonja', '13,11': 'Atrio de San Miguel',
+        '7,4': 'Casa de la Ballena',
+        '20,4': 'Casa Azul del Muelle',
+        '5,7': 'Casa de los Remos',
+        '22,7': 'Casa del Bonito',
+        '9,11': 'Casa Les Redes',
+        '18,11': 'Casa del Patrón',
+        '4,13': 'Casa de la Galerna',
+        '23,13': 'Casa del Barquero',
+        '1,15': 'Casa La Gaviota',
+        '12,15': 'Casa del Calderu',
+        '15,15': 'Casa El Pañol',
+        '26,15': 'Casa Les Nases',
+        '10,17': 'Casa del Farolero',
+        '17,17': 'Casa de la Sardina'
+      },
+      landmarks: [
+        { k: 'iglesia', tiles: [[12, 13], [13, 13], [14, 13], [15, 13], [12, 14], [13, 14], [14, 14], [15, 14]] }
+      ],
+      keeps: [[1, 8], [26, 8]],
+      lonja: [13, 5],
+      events: 'tazones'
     }
   };
 
@@ -821,6 +911,9 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
     subidon: { n: 'Subidón de la Orquesta', d: 'Las unidades a dos hexágonos o menos del escenario reciben Inspirado.' },
     charanga: { n: 'Avalancha de la Charanga', d: 'La charanga cruza el prao por la fila central: Mareado a quien se interponga.' },
     temazo: { n: 'Temazo de la Orquesta', d: 'Las unidades en la pista de baile reciben +1 de movimiento esta ronda.' },
+    mareaalta: { n: 'Marea alta', d: 'El mar cubre parte de la playa: +1 al coste de movimiento en la arena durante dos rondas.' },
+    desembarco: { n: 'Desembarco imperial', d: 'Se recuerda el desembarco de 1517: las unidades a dos hexágonos o menos de la lonja reciben Inspirado.' },
+    sardinada: { n: 'Gran sardinada', d: 'Huele a sardina asada: las unidades en casas marineras o junto a ellas recuperan 3 PV.' },
     barralibre: { n: 'Barra Libre de Sidra Fantástica', d: 'Las unidades en barras y casetas, o junto a ellas, se curan 3 PV.' }
   };
   VV.eventsForRound = function (mapId, round) {
@@ -828,6 +921,8 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
     if (round < 2) return out;
     if (mapId === 'villa') {
       if (round % 4 === 0) out.push(['mercau', 'orbayu', 'campanada'][(round / 4 - 1) % 3]);
+    } else if (mapId === 'tazones') {
+      if (round % 4 === 0) out.push(['mareaalta', 'desembarco', 'sardinada'][(round / 4 - 1) % 3]);
     } else {
       if (round % 4 === 0) out.push(['subidon', 'charanga', 'temazo'][(round / 4 - 1) % 3]);
       if (round % 5 === 0) out.push('barralibre');
@@ -1082,6 +1177,7 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
     }));
     s.factions.forEach((f, i) => {
       const u = E.makeUnit(s, cfg.factions[i].leader, i, f.keep[0], f.keep[1], { leader: true });
+      u.lvl = Math.min(2, VV.UNITS[u.def].levels.length - 1); u.hp = E.maxHp(u);
       f.leaderId = u.id;
     });
     // Orden de turno: facción inicial aleatoria con la semilla
@@ -1235,6 +1331,7 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
   E.attackerMul = function (s, u, w) {
     let m = 1;
     for (const x of u.st) { const S = VV.STATUS[x.id]; if (S.dmg) m *= S.dmg; }
+    for (const n of E.neighborsIdx(s, E.uIdx(s, u))) { const a = E.unitAtIdx(s, n); if (a && a !== u && a.fac === u.fac) { const L = E.passive(a, 'leadership'); if (L) { m *= 1 + L.leadership; break; } } }
     const p = E.passive(u, 'nearSummonMelee');
     if (p && w.r === 'm') {
       const near = E.neighborsIdx(s, E.uIdx(s, u)).some(i => { const a = E.unitAtIdx(s, i); return a && a.summon && a.summon.by === u.id; });
@@ -1270,10 +1367,15 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
     const arm = E.armFor(a, aw);
     const di = E.counterIndex(s, a, d, aw);
     const dw = di >= 0 ? E.weapons(d)[di] : null;
+    const charge = aw.sp === 'charge' ? 2 : 1;
+    let back = 1;
+    if (aw.sp === 'backstab') { const ca = Hex.toCube(a.x, a.y), cd = Hex.toCube(d.x, d.y); const [bc, br] = Hex.fromCube(2 * cd[0] - ca[0], 2 * cd[1] - ca[1], 2 * cd[2] - ca[2]); const o = inB(s, bc, br) ? E.unitAt(s, bc, br) : null; if (o && o.fac === a.fac) back = 2; }
+    let aCth = E.cth(s, a, d, arm && arm.acc); if (aw.sp === 'marksman') aCth = Math.max(aCth, 60); if (aw.sp === 'dice') aCth = 55;
+    let dCth = dw ? E.cth(s, d, a, 0) : 0; if (dw && dw.sp === 'dice') dCth = 55;
     return {
-      aw, dw, di,
-      aDmg: E.damage(s, a, d, aw.d, aw.t, aw, arm && arm.dmgMul), aStr: aw.s, aCth: E.cth(s, a, d, arm && arm.acc),
-      dDmg: dw ? E.damage(s, d, a, dw.d, dw.t, dw) : 0, dStr: dw ? dw.s : 0, dCth: dw ? E.cth(s, d, a, 0) : 0, arm
+      aw, dw, di, back, first: dw && dw.sp === 'firststrike' && aw.sp !== 'firststrike',
+      aDmg: E.damage(s, a, d, aw.d, aw.t, aw, (arm && arm.dmgMul || 1) * charge * back), aStr: aw.s, aCth,
+      dDmg: dw ? E.damage(s, d, a, dw.d, dw.t, dw, charge) : 0, dStr: dw ? dw.s : 0, dCth, arm
     };
   };
 
@@ -1294,7 +1396,7 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
       }
       dist = nd;
     };
-    for (let k = 0; k < n; k++) { if (k < P.aStr) step(true); if (k < P.dStr) step(false); }
+    for (let k = 0; k < n; k++) { if (P.first) { if (k < P.dStr) step(false); if (k < P.aStr) step(true); } else { if (k < P.aStr) step(true); if (k < P.dStr) step(false); } }
     let aDead = 0, dDead = 0, aExp = 0, dExp = 0;
     for (const [k, p] of dist) {
       const ah = Math.floor(k / 10000), dh = k % 10000;
@@ -1314,18 +1416,22 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
     const ev = [{ type: 'combat', att: a.id, def: d.id, aw: P.aw, dw: P.dw }];
     let aHits = 0, dHits = 0, lastHitDmg = 0;
     const n = Math.max(P.aStr, P.dStr);
-    for (let k = 0; k < n && !a.dead && !d.dead; k++) {
-      if (k < P.aStr) {
-        const hit = E.rand(s) * 100 < P.aCth;
-        if (hit) { d.hp -= P.aDmg; aHits++; lastHitDmg = P.aDmg; }
-        ev.push({ type: 'strike', from: a.id, to: d.id, hit, dmg: hit ? P.aDmg : 0, w: P.aw, hp: Math.max(0, d.hp) });
-        if (d.hp <= 0) break;
-      }
-      if (k < P.dStr) {
-        const hit = E.rand(s) * 100 < P.dCth;
-        if (hit) { a.hp -= P.dDmg; dHits++; }
-        ev.push({ type: 'strike', from: d.id, to: a.id, hit, dmg: hit ? P.dDmg : 0, w: P.dw, hp: Math.max(0, a.hp) });
-        if (a.hp <= 0) break;
+    const strikeA = () => {
+      const hit = E.rand(s) * 100 < P.aCth;
+      if (hit) { d.hp -= P.aDmg; aHits++; lastHitDmg = P.aDmg; if (P.aw.sp === 'drain') { const hl = Math.min(Math.floor(P.aDmg / 2), E.maxHp(a) - a.hp); if (hl > 0) { a.hp += hl; ev.push({ type: 'heal', id: a.id, n: hl }); } } }
+      ev.push({ type: 'strike', from: a.id, to: d.id, hit, dmg: hit ? P.aDmg : 0, w: P.aw, hp: Math.max(0, d.hp), ahp: a.hp });
+    };
+    const strikeD = () => {
+      const hit = E.rand(s) * 100 < P.dCth;
+      if (hit) { a.hp -= P.dDmg; dHits++; if (P.dw.sp === 'drain') { const hl = Math.min(Math.floor(P.dDmg / 2), E.maxHp(d) - d.hp); if (hl > 0) { d.hp += hl; ev.push({ type: 'heal', id: d.id, n: hl }); } } }
+      ev.push({ type: 'strike', from: d.id, to: a.id, hit, dmg: hit ? P.dDmg : 0, w: P.dw, hp: Math.max(0, a.hp) });
+    };
+    for (let k = 0; k < n && a.hp > 0 && d.hp > 0; k++) {
+      const order = P.first ? ['d', 'a'] : ['a', 'd'];
+      for (const who of order) {
+        if (a.hp <= 0 || d.hp <= 0) break;
+        if (who === 'a' && k < P.aStr) strikeA();
+        if (who === 'd' && k < P.dStr) strikeD();
       }
     }
     a.attacked = true; a.mp = 0;
@@ -1388,6 +1494,7 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
           if (spot != null) { killer.flags.summonTurn = s.turnIndex; E.spawnSummon(s, killer, o.minion, o.group, o.dur, spot, ev); }
         }
       }
+      if (E.passive(killer, 'killInspire')) E.neighborsIdx(s, E.uIdx(s, killer)).forEach(i => { const x = E.unitAtIdx(s, i); if (x && x.fac === killer.fac && x !== killer) { E.addStatus(s, x, 'inspirado', 1); ev.push({ type: 'status', id: x.id, st: 'inspirado' }); } });
       const kg = E.passive(killer, 'killGold');
       if (kg && killer.flags.killGoldRound !== s.round) {
         killer.flags.killGoldRound = s.round; s.factions[killer.fac].gold += kg.killGold;
@@ -1437,7 +1544,7 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
     const adj = E.neighborsIdx(s, here);
     const enemyAt = i => { const x = E.unitAtIdx(s, i); return x && x.fac !== u.fac ? x : null; };
     switch (A.kind) {
-      case 'arm': case 'buff': case 'heal': return { mode: 'self', list: [] };
+      case 'arm': case 'buff': case 'heal': case 'drink': return { mode: 'self', list: [] };
       case 'healAlly': return { mode: 'tiles', list: adj.filter(i => { const x = E.unitAtIdx(s, i); return x && x.fac === u.fac && x.hp < E.maxHp(x); }), need: 1 };
       case 'debuff': return { mode: 'tiles', list: adj.filter(i => enemyAt(i)), need: 1 };
       case 'summon': {
@@ -1546,6 +1653,7 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
         if (A.evasion) { E.addStatus(s, u, 'evasivo', 1, A.evasion); ev.push({ type: 'status', id: u.id, st: 'evasivo' }); }
         break;
       case 'heal': { const h = Math.min(A.amount, E.maxHp(u) - u.hp); u.hp += h; ev.push({ type: 'heal', id: u.id, n: h }); break; }
+      case 'drink': { const h = Math.min(A.amount, E.maxHp(u) - u.hp); if (h > 0) { u.hp += h; ev.push({ type: 'heal', id: u.id, n: h }); } E.addStatus(s, u, 'mareado', 1); ev.push({ type: 'status', id: u.id, st: 'mareado' }); xpGain = A.xp; break; }
       case 'healAlly': { const x = E.unitAtIdx(s, targets[0]); const h = Math.min(A.amount, E.maxHp(x) - x.hp); x.hp += h; ev.push({ type: 'heal', id: x.id, n: h }); xpGain = 1; break; }
       case 'debuff': { const x = enemyAt(targets[0]); E.addStatus(s, x, A.status, 1); ev.push({ type: 'status', id: x.id, st: A.status, from: u.id });
         if (A.arm) u.armed = Object.assign({ src: id }, A.arm); xpGain = 1; break; }
@@ -1739,6 +1847,8 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
       let heal = 0;
       if (t.prop >= 0 && s.props[t.prop].heal) { heal = s.props[t.prop].heal; if (f.id === 'ast' && s.props[t.prop].owner === fac) heal += 1; }
       else if (u.rested) heal = 2;
+      const rg = E.passive(u, 'regen'); if (rg) heal = Math.max(heal, rg.regen);
+      for (const n of E.neighborsIdx(s, E.uIdx(s, u))) { const x = E.unitAtIdx(s, n); if (x && x.fac === fac && x !== u) { const hp = E.passive(x, 'heals'); if (hp) heal = Math.max(heal, hp.heals); } }
       heal = Math.min(heal, f.id === 'ast' ? 9 : 8, E.maxHp(u) - u.hp);
       if (heal > 0) { u.hp += heal; ev.push({ type: 'heal', id: u.id, n: heal }); }
       // Afinidad con las barricas (Tío Guillermo)
@@ -1824,6 +1934,14 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
         for (let k = 0; k < 10 && pool.length; k++) pick.push(pool.splice(Math.floor(E.rand(s) * pool.length), 1)[0]);
         pick.forEach(i => { s.overlays[i] = Object.assign(s.overlays[i] || {}, { puddle: s.turnIndex + nf * 2 + 1 }); });
         hit.push({ tiles: pick });
+      } else if (id === 'mareaalta') {
+        s.tiles.forEach((t, i) => { if (t.t === 'sand') s.overlays[i] = Object.assign(s.overlays[i] || {}, { puddle: s.turnIndex + nf * 2 + 1 }); });
+        hit.push({ tiles: [] });
+      } else if (id === 'desembarco') {
+        const c = M.lonja; E.living(s).forEach(u => { if (Hex.dist(u.x, u.y, c[0], c[1]) <= 2) { E.addStatus(s, u, 'inspirado', 1); hit.push({ id: u.id, st: 'inspirado' }); } });
+      } else if (id === 'sardinada') {
+        const near = new Set(); s.props.forEach(p => { if (p.kind === 'marinera') { const i = I(s, p.c, p.r); near.add(i); E.neighborsIdx(s, i).forEach(n => near.add(n)); } });
+        E.living(s).forEach(u => { if (near.has(E.uIdx(s, u))) { const h = Math.min(3, E.maxHp(u) - u.hp); if (h > 0) { u.hp += h; hit.push({ id: u.id, heal: h }); } } });
       } else if (id === 'campanada' || id === 'subidon') {
         const c = id === 'campanada' ? M.teatro : M.stage;
         E.living(s).forEach(u => { if (Hex.dist(u.x, u.y, c[0], c[1]) <= 2) { E.addStatus(s, u, 'inspirado', 1); hit.push({ id: u.id, st: 'inspirado' }); } });
@@ -2114,7 +2232,7 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
       const close = foes.filter(e => Hex.dist(e.x, e.y, u.x, u.y) <= 3);
       for (const a of E.abilities(u)) {
         const A = VV.ABIL[a];
-        if (!['summon', 'barricade', 'sticky', 'heal', 'healAlly', 'buff'].includes(A.kind)) continue;
+        if (!['summon', 'barricade', 'sticky', 'heal', 'healAlly', 'buff', 'drink'].includes(A.kind)) continue;
         if (!E.abilityState(s, u, a).ok) continue;
         const T = E.abilityTargets(s, u, a);
         const toward = near.length ? near.reduce((m, e) => (Hex.dist(e.x, e.y, u.x, u.y) < Hex.dist(m.x, m.y, u.x, u.y) ? e : m)) : null;
@@ -2123,6 +2241,7 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
         if (A.kind === 'barricade' && close.length && T.list.length) return { type: 'ability', unit: u.id, abil: a, targets: sortToward(T.list).slice(0, T.need) };
         if (A.kind === 'sticky' && close.length && T.list.length) return { type: 'ability', unit: u.id, abil: a, targets: [sortToward(T.list)[0]] };
         if (A.kind === 'heal' && u.hp < E.maxHp(u) * 0.7) return { type: 'ability', unit: u.id, abil: a };
+        if (A.kind === 'drink' && E.xpNext(u) && !E.isMaxLevel(u) && (!close.length || u.hp < E.maxHp(u) * 0.8)) return { type: 'ability', unit: u.id, abil: a };
         if (A.kind === 'healAlly' && T.list.length) return { type: 'ability', unit: u.id, abil: a, targets: [T.list[0]] };
         if (A.kind === 'buff' && close.length && (u.mp === 0 || mem.done.has(u.id))) return { type: 'ability', unit: u.id, abil: a };
       }
@@ -3064,7 +3183,7 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
     grass: [[70, 122, 50], [86, 140, 58], [60, 106, 44]], park: [[52, 96, 40], [62, 110, 46], [44, 82, 34]], street: [[148, 136, 120], [124, 113, 99], [98, 89, 78]],
     alley: [[132, 121, 106], [112, 102, 89], [90, 82, 72]], plaza: [[196, 180, 148], [176, 160, 130], [150, 136, 110]], castle: [[134, 128, 116], [112, 107, 97], [86, 82, 74]],
     tavern: [[150, 136, 120], [126, 114, 100], [100, 90, 80]], mud: [[112, 78, 48], [94, 64, 38], [128, 96, 64]], dance: [[214, 182, 110], [184, 148, 76], [160, 124, 60]],
-    stage: [[130, 84, 44], [106, 66, 34], [84, 52, 26]], water: [[38, 98, 142], [30, 82, 124], [56, 122, 168]], sand: [[220, 206, 166], [196, 182, 142]]
+    stage: [[130, 84, 44], [106, 66, 34], [84, 52, 26]], rock: [[118, 110, 98], [94, 88, 78], [140, 132, 118]], water: [[38, 98, 142], [30, 82, 124], [56, 122, 168]], sand: [[220, 206, 166], [196, 182, 142]]
   };
   function texCol(t, wx, wy, xir) {
     const bx = Math.floor(wx / 3), by = Math.floor(wy / 3), n = hash(bx, by, 1), n2 = hash(bx, by, 2);
@@ -3090,6 +3209,8 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
       case 'mud': c = mid > 0.6 ? P[1] : n < 0.15 ? P[1] : n > 0.9 ? P[2] : P[0]; if (n2 < 0.03) c = [150, 170, 180]; break;
       case 'dance': c = ((bx >> 2) + (by >> 2)) % 2 ? P[1] : P[0]; if (n < 0.08) c = P[2]; break;
       case 'stage': c = by % 3 === 0 ? P[2] : P[0]; break;
+      case 'sand': c = n < 0.15 ? P[1] : P[0]; if (n2 < 0.01) c = [240, 236, 220]; break;
+      case 'rock': c = mid > 0.6 ? P[2] : n < 0.25 ? P[1] : P[0]; break;
       case 'water': { const w = vnoise(wx / 30 + 3, wy / 14, 9); c = w > 0.68 ? P[2] : w < 0.3 ? P[1] : P[0]; if (n < 0.04) c = [120, 170, 205]; break; }
     }
     const lf = 0.9 + low * 0.18;
@@ -3129,6 +3250,41 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
     });
   }
   ART.villageSpr = villageSpr;
+  function marineraSpr(v) {
+    return decoSprite('marinera' + v, 58, 60, S => {
+      const fac = ['#3f7fb8', '#3f9a6a', '#e0b23c', '#c94f3d', '#7a5ab0'][v % 5], trim = ['#f4efe2', '#2e5d3a', '#3f7fb8'][v % 3];
+      S.poly([[12, 14], [46, 14], [46, 56], [12, 56]], M(fac), { bev: 1.5, trim: M(trim), trimW: 0.9 });
+      S.poly([[8, 16], [29, 3], [50, 16]], M('#a63d27'), { bev: 2.5, folds: 3 });
+      S.rect(14, 30, 30, 2.4, M('#f4efe2'), { noLine: true }); for (let i = 0; i < 7; i++) S.rect(15 + i * 4.2, 32.4, 1, 5, M('#f4efe2'));
+      [[16, 19], [34, 19]].forEach(([x, y]) => { S.rect(x, y, 8, 9, M('#f4efe2')); S.rect(x + 1.5, y + 1.5, 5, 6, M('#9fd0e6', 'glass')); });
+      S.rect(25, 42, 8, 14, M('#5d3a1a', 'wood')); S.rect(15, 43, 7, 7, M('#f4efe2')); S.rect(16.5, 44.5, 4, 4, M('#ffd78a', 'glass'));
+      S.ell(50, 54, 6, 2.2, M('#c94f3d', 'wood')); S.ell(50, 53, 5, 1.2, M('#e8dcc0', 'wood'));
+    });
+  }
+  function faroSpr() {
+    return decoSprite('faro', 40, 78, S => {
+      S.poly([[13, 70], [27, 70], [24, 18], [16, 18]], M('#f2efe6'), { cyl: 1 });
+      [30, 46, 62].forEach(y => S.rect(14.5 - (70 - y) * -0.05, y - 4, 11 + (y - 18) * 0.05, 4, M('#c0392b'), { noLine: true }));
+      S.rect(14, 12, 12, 7, M('#2b2b30', 'metal')); S.rect(15.5, 13, 9, 5, F('#ffe7a0'));
+      S.poly([[12, 12], [20, 4], [28, 12]], M('#c0392b'), { bev: 1.5 }); S.ell(20, 3.5, 1.6, 1.6, M('#d9a62e', 'metal'));
+      S.rect(10, 70, 20, 4, M('#9a8f80', 'stone'));
+    });
+  }
+  function lonjaSpr() {
+    return decoSprite('lonja', 76, 58, S => {
+      S.poly([[6, 22], [70, 22], [70, 54], [6, 54]], M('#e9dcc2'), { bev: 1.5 });
+      S.poly([[2, 24], [38, 6], [74, 24]], M('#8f3a26'), { bev: 2.5, folds: 3 });
+      for (let i = 0; i < 4; i++) { S.rect(11 + i * 15, 34, 10, 20, M('#3f6f8f')); S.ell(16 + i * 15, 34, 5, 4, M('#3f6f8f')); }
+      S.rect(28, 25, 20, 6, M('#2e5d7a')); S.ell(38, 15, 4, 4, M('#f4efe2'));
+      [[10, 56], [62, 56]].forEach(([x, y]) => { S.ell(x, y, 5, 2.5, M('#9aa3ad', 'metal')); S.ell(x, y - 1.5, 3, 1.2, M('#c0c8d0', 'metal')); });
+    });
+  }
+  function rockSpr(v) {
+    return decoSprite('rock' + v, 60, 46, S => {
+      [[30, 30, 20, 13], [16, 34, 11, 9], [44, 33, 12, 10], [26, 20, 12, 10], [38, 22, 9, 8]].forEach(([x, y, rx, ry], i) => S.ell(x + (v % 2 ? i : -i) * 0.6, y, rx, ry, M(i % 2 ? '#7d7466' : '#8c8476', 'stone')));
+      if (v % 2) S.ell(34, 16, 6, 3, M('#5f8f3a', 'leaf'));
+    });
+  }
   function barrelPile() {
     return decoSprite('barrels', 48, 42, S => {
       const w = M('#8b5a2b', 'wood'), hoop = M('#4c4c57', 'metal');
@@ -3163,8 +3319,11 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
       if (lmTiles.has(i)) return;
       if (t.t === 'park') for (let k = 0; k < 3; k++) { const ox = [-12, 11, 0][k] + (hash(c, r, k) - 0.5) * 8, oy = [-8, -5, 9][k] + (hash(c, r, k + 4) - 0.5) * 6, v = Math.floor(hash(c, r, k + 9) * 4); items.push({ y: y + oy + 12, f: () => { shadowEll(ctx, x + ox + 6, y + oy + 13, 10, 3.5); ctx.drawImage(treeSpr2(v), Math.round(x + ox - 15), Math.round(y + oy - 24), 30, 38); } }); }
       if (t.t === 'wall' && !xir) items.push({ y: y + 18, f: () => { shadowEll(ctx, x + 10, y + 20, 30, 7); ctx.drawImage(houseSpr(c * 7 + r), Math.round(x - 32), Math.round(y - 42), 64, 62); } });
+      if (t.t === 'rock') items.push({ y: y + 12, f: () => { shadowEll(ctx, x + 6, y + 14, 28, 7); ctx.drawImage(rockSpr(c + r), Math.round(x - 30), Math.round(y - 28), 60, 46); } });
+      if (t.prop >= 0 && ['faro', 'lonja'].includes(s.props[t.prop].kind)) { const k = s.props[t.prop].kind; items.push({ y: y + 16, f: () => { shadowEll(ctx, x + 8, y + 16, 24, 6); if (k === 'faro') ctx.drawImage(faroSpr(), Math.round(x - 20), Math.round(y - 66), 40, 78); else ctx.drawImage(lonjaSpr(), Math.round(x - 38), Math.round(y - 44), 76, 58); } }); }
       if (t.t === 'wall' && xir) items.push({ y: y + 16, f: () => { shadowEll(ctx, x + 6, y + 14, 22, 6); ctx.drawImage(barrelPile(), Math.round(x - 24), Math.round(y - 28), 48, 42); } });
-      if (t.prop >= 0 && (t.t === 'tavern')) { const kind = xir ? 'caseta' : 'caseria'; items.push({ y: y + 14, f: () => { shadowEll(ctx, x + 8, y + 17, 30, 7); ctx.drawImage(villageSpr(kind, c * 3 + r), Math.round(x - 35), Math.round(y - 48), 70, 65); } }); }
+      if (t.prop >= 0 && t.t === 'tavern' && s.props[t.prop].kind === 'marinera') items.push({ y: y + 14, f: () => { shadowEll(ctx, x + 8, y + 17, 28, 7); ctx.drawImage(marineraSpr(c * 3 + r), Math.round(x - 30), Math.round(y - 50), 60, 62); } });
+      else if (t.prop >= 0 && (t.t === 'tavern')) { const kind = xir ? 'caseta' : 'caseria'; items.push({ y: y + 14, f: () => { shadowEll(ctx, x + 8, y + 17, 30, 7); ctx.drawImage(villageSpr(kind, c * 3 + r), Math.round(x - 35), Math.round(y - 48), 70, 65); } }); }
       if (t.t === 'cover' && t.prop < 0) items.push({ y: y + 10, f: () => { const col = ['#b5452c', '#2e7d32', '#1e5aa8'][(c + r) % 3]; blk(ctx, x - 22, y - 2, 44, 3, '#5d3a1a'); for (let q = 0; q < 5; q++) blk(ctx, x - 20 + q * 10, y + 1, 3, 13, '#5d3a1a'); blk(ctx, x - 26, y - 12, 52, 10, col); for (let q = 0; q < 52; q += 6) blk(ctx, x - 26 + q, y - 4, 3, 2, '#fafafa'); blk(ctx, x - 26, y - 12, 52, 2, sh(col, 0.25)); } });
       if (t.t === 'castle' || t.t === 'keep') items.push({ y: y + 6, f: () => { for (let q = -24; q <= 20; q += 11) { blk(ctx, x + q, y - SQ / 2 + 3, 7, 7, '#5c584f'); blk(ctx, x + q, y - SQ / 2 + 3, 7, 2, '#8a857a'); } if (t.t === 'keep') { shadowEll(ctx, x + 6, y + 6, 18, 5); blk(ctx, x - 12, y - 18, 24, 22, '#77726a'); blk(ctx, x + 6, y - 18, 6, 22, '#5e5a52'); blk(ctx, x - 14, y - 22, 28, 5, '#5c5850'); for (let q = -14; q < 14; q += 7) blk(ctx, x + q, y - 26, 4, 4, '#5c5850'); blk(ctx, x - 4, y - 8, 8, 12, '#2f261d'); } } });
     });
@@ -3907,7 +4066,7 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
       const M = VV.MAPS[id], tmp = {}; E.buildMap(tmp, id); const mm = ART.minimap(tmp, 220, 150).cv; mm.className = 'pix';
       return h('button', { class: 'map-card' + (setup.map === id ? ' on' : ''), 'aria-pressed': setup.map === id, onclick: () => { setup.map = id; renderSetup(); AU.sfx('select'); } }, mm, h('strong', {}, M.n), h('p', {}, M.sub));
     };
-    root.appendChild(h('section', { class: 'setup-sec' }, h('h2', {}, 'Campo de batalla'), h('div', { class: 'map-row' }, mapCard('villa'), mapCard('xiringuelu'))));
+    root.appendChild(h('section', { class: 'setup-sec' }, h('h2', {}, 'Campo de batalla'), h('div', { class: 'map-row' }, Object.keys(VV.MAPS).map(mapCard))));
     const seg = (key, opts) => h('div', { class: 'seg', role: 'group' }, opts.map(([v, label]) => h('button', { class: setup[key] === v ? 'on' : '', 'aria-pressed': setup[key] === v, onclick: () => { setup[key] = v; renderSetup(); } }, label)));
     root.appendChild(h('section', { class: 'setup-sec opts' }, h('h2', {}, 'Reglas'),
       h('label', {}, 'Jugadores'), seg('players', [[1, 'Contra la IA'], [2, 'Dos jugadores en este equipo']]),
@@ -4323,7 +4482,7 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
       body.appendChild(h('div', { class: 'pv-weapons', role: 'radiogroup' }, ws.map((w, k) => {
         const Q = E.combatParams(s, a, d, k);
         return h('button', { class: 'pv-w' + (k === wi ? ' on' : ''), role: 'radio', 'aria-checked': k === wi, onclick: () => { wi = k; render(); } },
-          h('span', { class: 'wn' }, w.n), h('span', {}, `${Q.aDmg}×${Q.aStr}`), h('span', { class: 'muted' }, VV.DMG[w.t] + (w.r === 'm' ? ', cuerpo a cuerpo' : ', a distancia')), h('span', { class: 'cth' }, Q.aCth + ' %'),
+          h('span', { class: 'wn' }, w.n), h('span', {}, `${Q.aDmg}×${Q.aStr}`), h('span', { class: 'muted' }, VV.DMG[w.t] + (w.r === 'm' ? ', cuerpo a cuerpo' : ', a distancia') + (w.sp ? ', ' + VV.WSPECIAL[w.sp].n.toLowerCase() : '')), h('span', { class: 'cth' }, Q.aCth + ' %'),
           h('span', { class: 'counter' }, Q.dw ? `Represalia: ${Q.dw.n} ${Q.dDmg}×${Q.dStr} (${Q.dCth} %)` : 'Sin represalia'));
       })));
       const Q = E.combatParams(s, a, d, wi), res = E.resist(d)[Q.aw.t] || 0;
@@ -4544,7 +4703,7 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
       u.st.length ? h('div', { class: 'chips' }, u.st.map(x => h('span', { class: 'chip', style: `--sc:${VV.STATUS[x.id].col}`, title: VV.STATUS[x.id].d }, VV.STATUS[x.id].n + (x.id === 'evasivo' ? ' +' + x.val : '')))) : null,
       u.armed ? h('div', { class: 'armed' }, 'Preparada: ' + VV.ABIL[u.armed.src].n) : null,
       h('h4', {}, 'Ataques'),
-      h('ul', { class: 'weap' }, E.weapons(u).map(w => h('li', {}, h('strong', {}, w.n), h('span', {}, `${w.d}×${w.s}`), h('span', { class: 'muted' }, `${VV.DMG[w.t]}, ${w.r === 'm' ? 'cuerpo a cuerpo' : 'a distancia'}`)))),
+      h('ul', { class: 'weap' }, E.weapons(u).map(w => h('li', {}, h('strong', {}, w.n), h('span', {}, `${w.d}×${w.s}`), h('span', { class: 'muted' }, `${VV.DMG[w.t]}, ${w.r === 'm' ? 'cuerpo a cuerpo' : 'a distancia'}${w.sp ? ', ' + VV.WSPECIAL[w.sp].n.toLowerCase() : ''}`)))),
       h('h4', {}, 'Resistencias'),
       h('div', { class: 'res' }, VV.DMG_ORDER.map(k => h('span', { class: res[k] > 0 ? 'pos' : res[k] < 0 ? 'neg' : '' }, VV.DMG[k] + ' ' + (res[k] > 0 ? '+' : '') + res[k] + ' %'))),
       h('p', { class: 'desc' }, '«' + d.desc + '»'));
@@ -4710,28 +4869,67 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
 
   /* ---------------- Ayuda y ajustes ---------------- */
   function helpContent() {
-    const T = Object.entries(VV.TERRAIN).filter(([, t]) => t.cost < 99).map(([, t]) => h('tr', {}, h('td', {}, t.n), h('td', {}, t.cost), h('td', {}, t.def + ' %')));
+    const S = 22, SQ = Math.sqrt(3) * S;
+    const cv = (w, hh) => { const c = ART.mk(w * 2, hh * 2); c.style.width = w + 'px'; c.style.height = hh + 'px'; c.className = 'pix help-ill'; const x = c.getContext('2d'); x.scale(2, 2); x.imageSmoothingEnabled = false; return [c, x]; };
+    const hex = (x, cx, cy, fill, stroke, lw) => { ART.hexPath(x, cx, cy, S - 1); if (fill) { x.fillStyle = fill; x.fill(); } if (stroke) { x.strokeStyle = stroke; x.lineWidth = lw || 1.5; x.stroke(); } };
+    const hc = (c, r, ox, oy) => [ox + S + c * 1.5 * S, oy + SQ / 2 + r * SQ + (c & 1) * SQ / 2];
+    const spr = (x, def, lvl, cx, cy, sc, flip, frame) => { const s = ART.sprite(def, lvl, frame || 'idle0'); x.save(); if (flip) { x.translate(cx, 0); x.scale(-1, 1); x.translate(-cx, 0); } x.drawImage(s, cx - 32 * sc, cy - 72 * sc, 64 * sc, 76 * sc); x.restore(); };
+    const label = (x, t, px, py, col, size, bg) => { x.font = `bold ${size || 11}px "Pixelify Sans", monospace`; x.textAlign = 'center'; if (bg) { const w = x.measureText(t).width + 8; x.fillStyle = bg; x.fillRect(px - w / 2, py - (size || 11), w, (size || 11) + 5); } x.lineWidth = 3; x.strokeStyle = '#1c1424'; x.strokeText(t, px, py); x.fillStyle = col || '#fff'; x.fillText(t, px, py); };
+    const field = (x, cols, rows, ox, oy, terr) => { for (let c = 0; c < cols; c++) for (let r = 0; r < rows; r++) { const [px, py] = hc(c, r, ox, oy); hex(x, px, py, ART.BASE[(terr && terr(c, r)) || 'grass'], 'rgba(0,0,0,0.25)', 1); } };
+    const ills = {
+      move() { const [c, x] = cv(230, 150); field(x, 7, 3, 4, 4, (cc, r) => (cc === 4 && r === 0) || (cc === 5 && r === 1) ? 'park' : 'grass');
+        [[1, 1], [2, 0], [2, 1], [3, 1], [3, 2], [1, 0], [1, 2], [2, 2], [0, 1]].forEach(([cc, r]) => { const [px, py] = hc(cc, r, 4, 4); hex(x, px, py, 'rgba(255,250,225,0.45)', 'rgba(255,250,225,0.9)', 1); });
+        x.fillStyle = '#fff3c4'; [[2, 1], [3, 1]].forEach(([cc, r]) => { const [px, py] = hc(cc, r, 4, 4); x.fillRect(px - 3, py - 3, 6, 6); });
+        const [ux, uy] = hc(1, 1, 4, 4); hex(x, ux, uy, null, '#ffd65a', 2.5); spr(x, 'ramon', 0, ux, uy + 16, 0.95);
+        label(x, '2', ...hc(3, 1, 4, 4).map((v, i) => v + (i ? 16 : 0)), '#fff3c4', 13); return c; },
+      attack() { const [c, x] = cv(230, 150); field(x, 5, 3, 30, 4);
+        const [a1, a2] = hc(1, 1, 30, 4), [b1, b2] = hc(2, 1, 30, 4); hex(x, b1, b2, 'rgba(255,75,58,0.22)', '#ff4b3a', 2.5); hex(x, a1, a2, null, '#ffd65a', 2.5);
+        spr(x, 'pilar', 1, a1, a2 + 16, 0.95, false, 'atk'); spr(x, 'pedro', 0, b1, b2 + 16, 0.95, true);
+        x.save(); x.translate(a1 + 22, a2 - 14); ART.hamster(ART.P(x), -2, -2, 'goggles'); x.restore();
+        label(x, '70 %', b1, b2 - 34, '#fff3c4', 12, 'rgba(28,20,36,0.85)'); label(x, '−9', b1 + 24, b2 - 10, '#ff6b5a', 14); return c; },
+      terrain() { const [c, x] = cv(230, 110); [['street', '30 %'], ['park', '50 %'], ['plaza', '20 %'], ['castle', '60 %']].forEach(([t, p], i) => { const px = 30 + i * 56, py = 46; hex(x, px, py, ART.BASE[t], '#1c1424', 1.5); if (t === 'park') { x.fillStyle = '#2f6a2a'; x.beginPath(); x.arc(px, py - 6, 11, 0, 7); x.fill(); x.fillStyle = '#5d3a1a'; x.fillRect(px - 2, py + 3, 4, 7); } label(x, p, px, py + 38, '#fff3c4', 12); label(x, VV.TERRAIN[t].n.split(' ')[0], px, py + 4, '#fff', 10); }); return c; },
+      flags() { const [c, x] = cv(230, 120); x.fillStyle = '#4f8a38'; x.fillRect(0, 70, 230, 50);
+        const v = ART.villageSpr('caseria', 1); x.drawImage(v, 6, 22, 64, 60); x.drawImage(v, 140, 22, 64, 60);
+        const flag = (px, col, acc, q) => { x.fillStyle = '#1a120c'; x.fillRect(px, 6, 3, 40); x.fillStyle = col; x.fillRect(px + 3, 6, 22, 14); x.strokeStyle = '#1a120c'; x.lineWidth = 1.5; x.strokeRect(px + 3, 6, 22, 14); x.fillStyle = acc; x.fillRect(px + 9, 11, 10, 3); x.fillRect(px + 12, 8, 3, 9); if (q) label(x, '?', px + 14, 18, '#6d675e', 10); };
+        flag(56, '#e8e2d2', '#9a948a', true); flag(190, VV.FACTIONS.ast.col, VV.FACTIONS.ast.accent);
+        x.fillStyle = '#fff3c4'; x.font = 'bold 22px monospace'; x.textAlign = 'center'; x.fillText('→', 108, 58);
+        label(x, '+8 PV', 172, 104, '#7ee787', 12); label(x, '+oro', 172, 117, '#ffd54f', 11); label(x, 'neutral', 40, 110, '#e8e2d2', 10); return c; },
+      recruit() { const [c, x] = cv(230, 140); field(x, 6, 3, 10, 4, (cc, r) => (cc <= 2 ? 'castle' : 'grass'));
+        const [kx, ky] = hc(1, 1, 10, 4); hex(x, kx, ky, ART.BASE.keep, '#ffd65a', 2);
+        [[0, 0], [0, 1], [2, 0], [2, 1], [1, 2]].forEach(([cc, r]) => { const [px, py] = hc(cc, r, 10, 4); hex(x, px, py, 'rgba(90,220,255,0.35)', '#5ad8ff', 1.5); });
+        spr(x, 'carlota', 0, kx, ky + 16, 0.9); const [px, py] = hc(2, 1, 10, 4); x.globalAlpha = 0.85; spr(x, 'pooh', 0, px, py + 16, 0.95); x.globalAlpha = 1;
+        ['ramon', 'pilar', 'teresa'].forEach((id, i) => x.drawImage(ART.portrait(id, 0, 0, 30), 150 + i * 0, 10 + i * 36, 30, 30));
+        label(x, 'R', 200, 62, '#fff3c4', 16, 'rgba(28,20,36,0.85)'); return c; },
+      tod() { const [c, x] = cv(230, 90); VV.TOD.forEach((T, i) => { const px = 20 + i * 38, py = 36; const day = T.law >= 0 && i !== 3; x.fillStyle = i === 3 ? '#ff7043' : day ? '#ffd54f' : '#e3f2fd'; x.beginPath(); x.arc(px, py, 10, 0, 7); x.fill(); if (!day && i !== 3) { x.fillStyle = '#2b2f63'; x.beginPath(); x.arc(px + 4, py - 3, 9, 0, 7); x.fill(); } label(x, ['Alba', 'Día', 'Tarde', 'Ocaso', 'Noche', 'Oscura'][i], px, py + 26, '#fff', 9); label(x, T.law === 1 ? '☼+' : T.law === -1 ? '☾+' : '=', px, py + 40, T.law === 1 ? '#ffd54f' : T.law === -1 ? '#b3c7ff' : '#bbb', 10); }); return c; },
+      evo() { const [c, x] = cv(230, 140); x.fillStyle = 'rgba(0,0,0,0.15)'; x.fillRect(0, 108, 230, 4);
+        [0, 1, 2].forEach(i => { spr(x, 'pooh', i, 34 + i * 76, 112, 0.95); if (i < 2) label(x, '›', 72 + i * 76, 80, '#fff3c4', 18); });
+        x.fillStyle = '#1c1424'; x.fillRect(20, 124, 190, 8); x.fillStyle = '#b388ff'; x.fillRect(21, 125, 130, 6); label(x, 'XP', 12, 132, '#c9a7ff', 9); return c; },
+      zoc() { const [c, x] = cv(230, 140); field(x, 6, 3, 10, 4);
+        const [ex, ey] = hc(3, 1, 10, 4); E.Hex.neighbors(3, 1).forEach(([cc, r]) => { if (cc < 0 || r < 0 || r > 2) return; const [px, py] = hc(cc, r, 10, 4); hex(x, px, py, 'rgba(220,50,40,0.3)', 'rgba(220,50,40,0.7)', 1); });
+        spr(x, 'santiago', 0, ex, ey + 16, 0.9, true); const [ux, uy] = hc(1, 1, 10, 4); spr(x, 'teresa', 0, ux, uy + 16, 0.9);
+        const [sx, sy] = hc(2, 1, 10, 4); label(x, 'ALTO', sx, sy + 4, '#ff8a80', 11, 'rgba(28,20,36,0.85)'); return c; }
+    };
+    const card = (n, title, ill, text) => h('article', { class: 'help-card' }, h('div', { class: 'hc-n' }, n), h('h3', {}, title), ills[ill](), h('p', {}, text));
     return h('div', { class: 'help' },
-      h('h2', {}, 'Cómo jugar'),
-      h('p', {}, 'Cada bando mueve todas sus unidades en su turno. Gana quien derrote al comandante rival o, en el modo Dominio, quien controle cuatro propiedades durante dos rondas completas seguidas.'),
-      h('h3', {}, 'Mover y atacar'),
-      h('p', {}, 'Selecciona una unidad para ver sus casillas alcanzables. El coste depende del terreno y del arquetipo. Al entrar junto a un enemigo de nivel 1 o superior la unidad se detiene: es su zona de control. Cada unidad puede atacar o usar una habilidad ofensiva una vez por turno, y atacar termina su movimiento. Las recién reclutadas e invocadas esperan al turno siguiente.'),
-      h('p', {}, 'Haz clic en un enemigo para abrir la previsualización: verás el daño por golpe, la probabilidad de impacto, la represalia y la probabilidad de que caiga cada unidad. Un ataque cuerpo a cuerpo recibe represalia cuerpo a cuerpo y uno a distancia, a distancia. Si el defensor no tiene ese tipo de arma, no responde.'),
-      h('h3', {}, 'Probabilidad y daño'),
-      h('p', {}, 'Probabilidad de impacto = 100 − defensa del defensor en su terreno, entre 20 % y 90 %. Daño = base × hora del día × resistencia × estados. La defensa decide si el golpe entra; la resistencia, cuánto duele.'),
-      h('h3', {}, 'Ciclo día y noche'),
-      h('p', {}, 'Amanecer, Día, Tarde, Atardecer, Noche y Noche profunda. Las unidades diurnas hacen +25 % de día y −25 % de noche; las nocturnas, al revés.'),
-      h('h3', {}, 'Economía'),
-      h('p', {}, 'Cada ronda: 6 de oro + 2 por propiedad (la Plaza del Güevu, la Plaza de Abastos y los Banderines dan 4; la Gran Barra, 3) − 1 por nivel de cada personaje reclutado. Se empieza con 75 de oro. El comandante debe estar en su casilla de mando para reclutar, y puedes repetir personajes. Todos los puestos con bandera (caserías, casetas, plazas y monumentos con bandera) se capturan al entrar, cambian la bandera a tu color, curan 8 PV al empezar el turno y dan oro; descansar sin moverse cura 2.'),
-      h('h3', {}, 'Experiencia'),
-      h('p', {}, 'Sobrevivir a un combate da 2 XP, cada golpe acertado 1 XP y eliminar a un enemigo 8 × su nivel. Capturar por primera vez una propiedad da 3 XP. Al llenar la barra morada la unidad evoluciona, cambia de aspecto y recupera toda su vida.'),
-      h('h3', {}, 'La pantalla de batalla'),
-      h('ul', {}, ['Arriba: ronda, hora del día, oro y propiedades. Arriba a la izquierda del mapa, el objetivo de la batalla.', 'Abajo: tu ejército (verde: listo; ámbar: a medias; gris: ya actuó), las instrucciones del momento con las habilidades de la unidad elegida, y los botones de reclutar y terminar turno.', 'Derecha: ficha, habilidades, evolución y crónica de la unidad que elijas, tuya o rival.', 'Colores del tablero: claro, puedes moverte; marco rojo, puedes atacar; dorado, objetivo de habilidad; rojo tenue, alcance de un rival. Las banderas marcan los puestos: blanca con interrogación si nadie los controla, del color de la facción si ya son suyos.'].map(x => h('li', {}, x))),
+      h('h2', {}, 'Cómo jugar en nueve pasos'),
+      h('p', { class: 'lead' }, 'Cada bando mueve todas sus unidades en su turno. Ganas si derrotas al comandante rival (o, en el modo Dominio, si controlas cuatro puestos durante dos rondas seguidas). Tu comandante empieza ya en nivel 3.'),
+      h('div', { class: 'help-grid' },
+        card(1, 'Elige y mueve', 'move', 'Haz clic en una unidad: las casillas claras son su alcance y el número indica lo que cuesta llegar. Haz clic en una de ellas para moverte.'),
+        card(2, 'Ataca', 'attack', 'Haz clic en un enemigo con marco rojo. Verás la probabilidad de impacto, el daño por golpe, la represalia y la probabilidad de que caiga cada uno. Un ataque termina el movimiento.'),
+        card(3, 'El terreno importa', 'terrain', 'El porcentaje es la probabilidad de esquivar. Los parques y casas protegen; las plazas y el barro dejan al descubierto. Cada personaje suma o resta su esquiva propia.'),
+        card(4, 'Captura banderas', 'flags', 'Entra en un puesto con bandera para que ondee con tu color. Cada puesto cura 8 PV al empezar tu turno y te da oro en cada ronda.'),
+        card(5, 'Recluta en la fortaleza', 'recruit', 'Con el comandante en la casilla de mando, pulsa R o «Reclutar» y elige una casilla azul. Puedes repetir personajes; llegan listos en tu siguiente turno.'),
+        card(6, 'Día y noche', 'tod', 'Los diurnos pegan +25 % de día y −25 % de noche; los nocturnos al revés. El amanecer y el atardecer son neutrales.'),
+        card(7, 'Gana experiencia y evoluciona', 'evo', 'Atacar, sobrevivir y derrotar enemigos llena la barra morada. Al llenarla, el personaje evoluciona: cambia de aspecto, recupera la vida y aprende habilidades.'),
+        card(8, 'Zonas de control', 'zoc', 'Al entrar junto a un enemigo de nivel 1 o superior, tu unidad se detiene. Úsalo para bloquear pasos estrechos y proteger a tu comandante.'),
+        h('article', { class: 'help-card wide' }, h('div', { class: 'hc-n' }, 9), h('h3', {}, 'Rasgos únicos'),
+          h('ul', { class: 'traits' }, Object.entries(VV.WSPECIAL).map(([k, w]) => h('li', {}, h('strong', {}, w.n + ': '), w.d)).concat(
+            ['brindis', 'inspiracion', 'piedra', 'concierto', 'beber'].map(k => h('li', {}, h('strong', {}, VV.ABIL[k].n + ': '), VV.ABIL[k].d)))))),
       h('h3', {}, 'Controles'),
-      h('ul', {}, ['Clic izquierdo: seleccionar, mover y atacar.', 'Clic derecho o Esc: cancelar.', 'Rueda o botones + y −: zoom. Arrastrar: desplazar el mapa.', 'Espacio: terminar turno. R: reclutar. N: siguiente unidad.', 'H: mostrar la rejilla. Z: zonas de control. M: sonido.'].map(x => h('li', {}, x))),
+      h('div', { class: 'keys' }, [['Clic', 'seleccionar, mover, atacar'], ['Clic dcho. / Esc', 'cancelar'], ['Rueda', 'zoom'], ['Arrastrar', 'mover la cámara'], ['Espacio', 'fin de turno'], ['R', 'reclutar'], ['N', 'siguiente unidad'], ['H', 'rejilla'], ['Z', 'zonas de control'], ['M', 'sonido']].map(([k, d]) => h('div', { class: 'key' }, h('kbd', {}, k), h('span', {}, d)))),
       h('h3', {}, 'Terrenos'),
-      h('table', { class: 'terr' }, h('tr', {}, h('th', {}, 'Terreno'), h('th', {}, 'Coste'), h('th', {}, 'Defensa')), T),
-      h('p', { class: 'muted' }, 'Tanques: +1 de coste en parque y barro, defensa máxima 50 % salvo en fortaleza. Ágiles: −1 de coste en parque y barro y +10 de defensa en parque. Místicos: +5 en edificios. Apoyo: +5 en sidrerías y casetas.'));
+      h('table', { class: 'terr' }, h('tr', {}, h('th', {}, 'Terreno'), h('th', {}, 'Coste'), h('th', {}, 'Defensa')), Object.entries(VV.TERRAIN).filter(([, t]) => t.cost < 99).map(([, t]) => h('tr', {}, h('td', {}, t.n), h('td', {}, t.cost), h('td', {}, t.def + ' %')))),
+      h('p', { class: 'muted' }, 'Tanques: +1 de coste en parque, barro y arena; defensa máxima 50 % salvo en fortaleza. Ágiles: −1 de coste en parque, barro y arena y +10 de defensa en parque. Místicos: +5 en edificios. Apoyo: +5 en sidrerías y casetas.'));
   }
   function helpModal() { openModal(h('div', {}, helpContent(), h('div', { class: 'row end' }, h('button', { class: 'btn', 'data-autofocus': 1, onclick: () => closeModal() }, 'Cerrar'))), 'wide scroll'); }
   function settingsModal() {
@@ -4772,7 +4970,7 @@ select { font: inherit; padding: 6px 8px; background: var(--panel2); color: var(
         h('div', { class: 'ency-info' }, h('h2', {}, L.name), h('p', { class: 'muted' }, `${F.n}, ${d.cls.toLowerCase()}`), h('p', { class: 'desc' }, '«' + d.desc + '»'),
           h('div', { class: 'stats' }, h('span', {}, h('b', {}, 'PV '), L.hp), h('span', {}, h('b', {}, 'MOV '), L.mov), d.cost ? h('span', {}, h('b', {}, 'Coste '), d.cost) : null,
             h('span', {}, h('b', {}, 'XP '), L.xp || (d.kind === 'summon' ? '—' : 'Máximo')), h('span', {}, h('b', {}, VV.ARCH[d.arch].n)), h('span', {}, h('b', {}, VV.ALIGN[d.align])), d.defBonus ? h('span', {}, h('b', {}, 'Esquiva propia '), (d.defBonus > 0 ? '+' : '') + d.defBonus + ' %') : null),
-          h('h4', {}, 'Ataques'), h('ul', { class: 'weap' }, L.w.map(w => h('li', {}, h('strong', {}, w.n), h('span', {}, `${w.d}×${w.s}`), h('span', { class: 'muted' }, `${VV.DMG[w.t]}, ${w.r === 'm' ? 'cuerpo a cuerpo' : 'a distancia'}`)))),
+          h('h4', {}, 'Ataques'), h('ul', { class: 'weap' }, L.w.map(w => h('li', {}, h('strong', {}, w.n), h('span', {}, `${w.d}×${w.s}`), h('span', { class: 'muted' }, `${VV.DMG[w.t]}, ${w.r === 'm' ? 'cuerpo a cuerpo' : 'a distancia'}${w.sp ? ', ' + VV.WSPECIAL[w.sp].n.toLowerCase() : ''}`)))),
           abl.length ? h('h4', {}, 'Habilidades') : null, h('ul', { class: 'abl' }, abl.map(a => h('li', {}, h('strong', {}, VV.ABIL[a].n), h('span', { class: 'muted' }, VV.ABIL[a].d)))),
           h('h4', {}, 'Resistencias'), h('div', { class: 'res' }, VV.DMG_ORDER.map(k => h('span', { class: res[k] > 0 ? 'pos' : res[k] < 0 ? 'neg' : '' }, VV.DMG[k] + ' ' + (res[k] > 0 ? '+' : '') + res[k] + ' %'))))),
       d.levels.length > 1 ? h('div', { class: 'evo-strip' }, h('h4', {}, 'Árbol de evolución'), h('div', { class: 'strip' }, d.levels.map((l, i) => [i ? h('span', { class: 'evo-arrow' }, '›') : null,

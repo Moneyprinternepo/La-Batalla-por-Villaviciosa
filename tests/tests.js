@@ -42,6 +42,27 @@ test('Variedad de estadísticas', () => {
   ok(Object.values(VV.UNITS).filter(u => u.defBonus).length >= 8, 'esquiva propia en varios personajes');
   eq(VV.ECON.startGold, 75, 'oro inicial reducido');
 });
+test('Comandante en nivel 3 y Tío Guillermo que bebe', () => {
+  const s = game('villa', 'mad', 'ver', 'tio_guillermo', 'tio_tony');
+  const L = E.byId(s, s.factions[0].leaderId); eq(L.lvl, 2, 'el comandante empieza en el tercer nivel');
+  const T = E.byId(s, s.factions[1].leaderId); eq(T.lvl, 2);
+  const s2 = sandbox('villa'); const g = place(s2, 'tio_guillermo', 0, 3, 9);
+  eq(E.maxHp(g), 36, 'Tío Guillermo empieza débil'); g.hp = 30;
+  const r = E.useAbility(s2, g, 'beber'); ok(!r.err, r.err); eq(g.xp, 7, 'beber da experiencia'); ok(E.hasStatus(g, 'mareado'), 'y marea');
+  g.xp = 19; g.cd = {}; g.attacked = false; E.useAbility(s2, g, 'beber'); eq(g.lvl, 1, 'sube de nivel bebiendo');
+});
+test('Rasgos únicos en combate', () => {
+  const s = sandbox('xiringuelu');
+  const p = place(s, 'pilar', 0, 10, 7), x = place(s, 'chanchenchi', 1, 11, 7); s.tiles[E.uIdx(s, x)].t = 'park';
+  ok(E.combatParams(s, p, x, 1).aCth >= 60, 'Puntería de Pilar');
+  const po = place(s, 'ponchu', 0, 15, 7), d = place(s, 'carlos', 1, 16, 7);
+  eq(E.combatParams(s, po, d, 0).aDmg, E.damage(s, po, d, 8, 'imp', { r: 'm' }, 2), 'Carga duplica el daño'); ok(E.combatParams(s, po, d, 0).aDmg > E.damage(s, po, d, 8, 'imp', { r: 'm' }) * 1.8, 'el doble aproximado');
+  const c = place(s, 'carlos', 0, 20, 4), a = place(s, 'ramon', 0, 21, 4), e = place(s, 'guille', 1, 22, 4);
+  ok(E.attackerMul(s, a, { r: 'm' }) > 1.1, 'Musa literaria de Carlos');
+  const tc = place(s, 'tia_carmen', 0, 5, 12), v = place(s, 'santiago', 1, 6, 12); eq(E.combatParams(s, tc, v, 1).aCth, 55, 'Azar de los dados');
+  const gl = place(s, 'guille', 1, 25, 13); gl.lvl = 1; gl.hp = E.maxHp(gl); const at = place(s, 'ramon', 0, 24, 13);
+  ok(E.combatParams(s, at, gl, 0).first, 'Primer golpe de Guilletón');
+});
 test('Distancia entre hexágonos', () => {
   eq(Hex.dist(0, 0, 0, 0), 0); eq(Hex.dist(0, 0, 1, 0), 1); eq(Hex.dist(0, 0, 2, 0), 2);
   eq(Hex.dist(0, 0, 0, 3), 3); eq(Hex.dist(1, 0, 3, 3), 4); eq(Hex.dist(5, 5, 2, 5), 3);

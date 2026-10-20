@@ -35,6 +35,8 @@
     puddle: { n: 'Charco', cost: 2, def: 20 },
     dance: { n: 'Pista de baile', cost: 1, def: 20, open: true },
     stage: { n: 'Escenario', cost: 1, def: 40 },
+    sand: { n: 'Arena de playa', cost: 2, def: 30, open: true },
+    rock: { n: 'Acantilado', cost: 99, def: 0 },
     tables: { n: 'Barrera de mesas', cost: 99, def: 0 },
     wall: { n: 'Edificio cerrado', cost: 99, def: 0 },
     water: { n: 'Agua profunda', cost: 99, def: 0 }
@@ -42,8 +44,8 @@
 
   VV.ARCH = {
     infantry: { n: 'Infantería', cost: {}, def: {} },
-    agile: { n: 'Ágil', cost: { park: -1, mud: -1 }, def: { park: 10 } },
-    tank: { n: 'Tanque', cost: { park: 1, mud: 1 }, def: {}, cap: 50 },
+    agile: { n: 'Ágil', cost: { park: -1, mud: -1, sand: -1 }, def: { park: 10 } },
+    tank: { n: 'Tanque', cost: { park: 1, mud: 1, sand: 1 }, def: {}, cap: 50 },
     mystic: { n: 'Místico', cost: {}, def: { cover: 5 } },
     support: { n: 'Apoyo', cost: {}, def: { tavern: 5 } }
   };
@@ -126,6 +128,11 @@
   ab('bodega', { n: 'Bodega interminable', kind: 'heal', cd: 4, amount: 6, d: 'Se cura 6 PV usando su acción.' });
   ab('gran_cosecha', { n: 'LA GRAN COSECHA', kind: 'attack', cd: 5, ult: true, target: 'all_adj', custom: { d: 12, s: 2, t: 'imp' }, healPerTarget: 3, healMax: 12, fx: 'barrel', d: '12×2 de impacto a todos los adyacentes; se cura 3 PV por objetivo alcanzado (máx. 12).' });
   ab('tabernero', { n: 'Afinidad con las barricas', kind: 'passive', tavernXP: 3, d: '+3 XP al empezar turno en una barra o sidrería controlada (una vez cada dos rondas).' });
+  ab('beber', { n: 'Beber vino', kind: 'drink', cd: 2, xp: 7, amount: 4, d: 'Da un trago largo: gana 7 XP y cura 4 PV, pero queda Mareado una ronda. Así asciende de Tío Guillermo a Emperador del Tempranillo.' });
+  ab('brindis', { n: 'Brindis de victoria', kind: 'passive', killInspire: 1, d: 'Cuando elimina a un enemigo, sus aliados adyacentes quedan Inspirados.' });
+  ab('inspiracion', { n: 'Musa literaria', kind: 'passive', leadership: 0.15, d: 'Los aliados adyacentes hacen +15 % de daño.' });
+  ab('piedra', { n: 'Cuerpo de piedra', kind: 'passive', regen: 4, d: 'Recupera 4 PV al empezar cada turno, aunque haya combatido.' });
+  ab('concierto', { n: 'Concierto de cabecera', kind: 'passive', heals: 4, d: 'Los aliados adyacentes recuperan 4 PV al empezar su turno.' });
   ab('grito_guerra', { n: 'Grito de guerra', kind: 'buff', cd: 3, status: 'inspirado', d: 'Gana Inspirado durante una ronda.' });
   ab('patada_circular', { n: 'Patada circular', kind: 'attack', cd: 4, target: 'two', custom: { d: 8, s: 2, t: 'imp' }, fx: 'kick', d: 'Ataca a dos enemigos adyacentes con 8×2 impacto cada uno.' });
   ab('patada_estrato', { n: 'PATADA ESTRATOSFÉRICA', kind: 'leap', cd: 5, ult: true, range: 2, then: { d: 12, s: 2, t: 'imp' }, fx: 'kick', d: 'Salta a un hexágono libre a dos casillas y golpea con 12×2 a un enemigo adyacente al destino.' });
@@ -163,7 +170,7 @@
   const HR = { blond: '#ecc24a', black: '#1d1a24', brown: '#5b3a22', dbrown: '#3a2416', grey: '#c8c8ce', white: '#f4f4f0' };
 
   // ---------- ASTURES ----------
-  def('ramon', { fac: 'ast', kind: 'hero', arch: 'infantry', align: 'n', cost: 18, res: { pro: 15 }, cls: 'Guerrero escanciador',
+  def('ramon', { fac: 'ast', kind: 'hero', arch: 'infantry', align: 'n', cost: 22, res: { pro: 15 }, cls: 'Guerrero escanciador',
     desc: 'Nadie sabe cuántas copas le quedan. Probablemente ni él.', fx: 'cup',
     levels: [
       L('Ramón', 36, 5, 26, [W('Vaso en la frente', 'm', 5, 2, 'imp', 'fist'), W('Lanzamiento de copa', 'd', 6, 3, 'pro', 'cup')], ['ronda_bienvenida']),
@@ -171,44 +178,44 @@
       L('Don Ramón', 60, 5, null, [W('Vaso en la frente', 'm', 9, 2, 'imp', 'fist'), W('Lanzamiento de copa', 'd', 11, 3, 'pro', 'cupbig')], ['ultima_ronda'])
     ] });
 
-  def('pilar', { fac: 'ast', kind: 'hero', arch: 'agile', align: 'n', cost: 18, defBonus: 10, cls: 'Arquera de hámster',
+  def('pilar', { fac: 'ast', kind: 'hero', arch: 'agile', align: 'n', cost: 22, defBonus: 10, cls: 'Arquera de hámster',
     desc: 'Puchi no pidió participar en esta guerra. Ahora es artillería.', fx: 'hamster',
     levels: [
-      L('Pilar', 28, 6, 25, [W('Puñetín', 'm', 3, 2, 'imp', 'fist'), W('¡Puchi, vuela!', 'd', 7, 3, 'pro', 'hamster')], ['rebote_puchi']),
+      L('Pilar', 32, 6, 25, [W('Puñetín', 'm', 3, 2, 'imp', 'fist'), W('¡Puchi, vuela!', 'd', 8, 3, 'pro', 'hamster')], ['rebote_puchi']),
       L('Pilarina', 36, 7, 40, [W('Puñetín', 'm', 4, 2, 'imp', 'fist'), W('¡Puchi, vuela!', 'd', 9, 3, 'pro', 'hamster2')], ['puchi_bumeran']),
       L('La Pilu', 48, 7, null, [W('Puñetín', 'm', 5, 2, 'imp', 'fist'), W('¡Puchi, vuela!', 'd', 11, 3, 'pro', 'hamster3')], ['puchi_supersonico'])
     ] });
 
-  def('teresa', { fac: 'ast', kind: 'hero', arch: 'agile', align: 'n', cost: 22, cls: 'Berserker invocadora',
+  def('teresa', { fac: 'ast', kind: 'hero', arch: 'agile', align: 'n', cost: 16, cls: 'Berserker invocadora',
     desc: 'Si escuchas «¡CHAVALES!», ya es demasiado tarde.', fx: 'fist', res: { cut: -15 }, terrainBonus: { open: 5 },
     levels: [
-      L('Teresa', 32, 7, 26, [W('Hostia de confianza', 'm', 8, 2, 'imp', 'fist')], ['chavales']),
+      L('Teresa', 36, 7, 26, [W('Hostia de confianza', 'm', 8, 2, 'imp', 'fist')], ['chavales']),
       L('Terelu', 44, 7, 40, [W('Hostia de confianza', 'm', 10, 2, 'imp', 'fist')], ['pandilla']),
       L('Tereso', 58, 8, null, [W('Hostia de confianza', 'm', 12, 3, 'imp', 'fist')], ['todas_a_una'])
     ] });
 
-  def('carlota', { fac: 'ast', kind: 'hero', arch: 'tank', align: 'l', cost: 27, defBonus: -10, cls: 'Tanque y luchadora de puños',
+  def('carlota', { fac: 'ast', kind: 'hero', arch: 'tank', align: 'l', cost: 23, defBonus: -10, cls: 'Tanque y luchadora de puños',
     desc: 'La mejor negociación empieza con un puñetazo.', fx: 'fist', res: { imp: 20 },
     levels: [
       L('Carlota', 52, 4, 32, [W('Puñetazo de Carlota', 'm', 10, 2, 'imp', 'fist')], ['aqui_no_pasa']),
       L('Charlotte', 72, 4, null, [W('Puñetazo de Charlotte', 'm', 14, 3, 'imp', 'fist')], ['terremoto'])
     ] });
 
-  def('tia_carlota', { fac: 'ast', kind: 'hero', arch: 'support', align: 'n', cost: 19, res: { imp: 10 }, cls: 'Maga decoradora',
+  def('tia_carlota', { fac: 'ast', kind: 'hero', arch: 'support', align: 'n', cost: 23, res: { imp: 10 }, cls: 'Maga decoradora',
     desc: 'Te va a reformar la casa. Y la cara.', fx: 'cushion',
     levels: [
       L('Tía Carlota', 35, 5, 27, [W('Lámpara contundente', 'm', 5, 2, 'imp', 'fist'), W('Cojines a domicilio', 'd', 6, 3, 'pro', 'cushion')], ['cambio_deco']),
       L('CEO de Inzu Deco', 49, 5, null, [W('Lámpara contundente', 'm', 6, 2, 'imp', 'fist'), W('Cojines a domicilio', 'd', 9, 3, 'pro', 'cushion')], ['reforma_integral'])
     ] });
 
-  def('tia_carmen', { fac: 'ast', kind: 'hero', arch: 'support', align: 'n', cost: 19, cls: 'Controladora táctica',
+  def('tia_carmen', { fac: 'ast', kind: 'hero', arch: 'support', align: 'n', cost: 17, cls: 'Controladora táctica',
     desc: 'Nunca aceptes jugar una partida con ella.', fx: 'dice',
     levels: [
-      L('Tía Carmen', 34, 5, 27, [W('Tablero en la cara', 'm', 4, 2, 'imp', 'fist'), W('Dados del Catán', 'd', 6, 3, 'psi', 'dice')], ['te_toca_perder']),
+      L('Tía Carmen', 34, 5, 27, [W('Tablero en la cara', 'm', 4, 2, 'imp', 'fist'), W('Dados del Catán', 'd', 7, 3, 'psi', 'dice')], ['te_toca_perder']),
       L('La Mamen', 47, 5, null, [W('Tablero en la cara', 'm', 5, 2, 'imp', 'fist'), W('Dados del Catán', 'd', 8, 3, 'psi', 'dice')], ['monopolio'])
     ] });
 
-  def('pooh', { fac: 'ast', kind: 'hero', arch: 'agile', align: 'c', cost: 18, defBonus: 10, cls: 'Bestia mutante del caos',
+  def('pooh', { fac: 'ast', kind: 'hero', arch: 'agile', align: 'c', cost: 20, defBonus: 10, cls: 'Bestia mutante del caos',
     desc: 'Pesa tres kilos. Aparentemente contiene un demonio.', fx: 'vomit', res: { cha: 20 },
     levels: [
       L('Pooh', 29, 7, 25, [W('Espasmo inesperado', 'm', 5, 2, 'imp', 'bite'), W('Vómito traicionero', 'd', 6, 3, 'cha', 'vomit')], ['accidente']),
@@ -217,7 +224,7 @@
     ] });
 
   // ---------- MADRILES ----------
-  def('pedro', { fac: 'mad', kind: 'hero', arch: 'mystic', align: 'c', cost: 23, cls: 'Nigromante de la chapa',
+  def('pedro', { fac: 'mad', kind: 'hero', arch: 'mystic', align: 'c', cost: 27, cls: 'Nigromante de la chapa',
     desc: 'Su arma más poderosa es una conversación sin final.', fx: 'talk',
     levels: [
       L('Pedro', 32, 5, 30, [W('Codazo explicativo', 'm', 3, 2, 'imp', 'fist'), W('Dar la chapa', 'd', 7, 3, 'psi', 'talk')], ['interlocutor']),
@@ -225,38 +232,38 @@
       L('Pedrito Melenas, el Rey de las Nenas', 57, 5, null, [W('Codazo explicativo', 'm', 5, 2, 'imp', 'fist'), W('Dar la chapa', 'd', 11, 3, 'psi', 'talk')], ['conferencia'], { res: { psi: 30 } })
     ] });
 
-  def('carlos', { fac: 'mad', kind: 'hero', arch: 'mystic', align: 'n', cost: 14, cls: 'Escritor hechicero',
+  def('carlos', { fac: 'mad', kind: 'hero', arch: 'mystic', align: 'n', cost: 22, cls: 'Escritor hechicero',
     desc: 'Ha escrito doce novelas. Nadie ha terminado la primera.', fx: 'papers',
     levels: [
-      L('Carlos', 29, 5, 25, [W('Golpe de manuscrito', 'm', 4, 2, 'imp', 'papers'), W('Escribir un libro malo', 'd', 6, 3, 'psi', 'papers')], ['primer_borrador']),
+      L('Carlos', 31, 5, 25, [W('Golpe de manuscrito', 'm', 4, 2, 'imp', 'papers'), W('Escribir un libro malo', 'd', 7, 3, 'psi', 'papers')], ['primer_borrador']),
       L('Carlangas', 38, 5, 40, [W('Golpe de manuscrito', 'm', 4, 2, 'imp', 'papers'), W('Escribir un libro malo', 'd', 8, 3, 'psi', 'papers')], ['spoiler']),
       L('Carlitos Gormiti, el Rey de las Titis', 51, 5, null, [W('Golpe de manuscrito', 'm', 6, 2, 'imp', 'papers'), W('Escribir un libro malo', 'd', 10, 3, 'psi', 'papers')], ['trilogia'])
     ] });
 
-  def('guille', { fac: 'mad', kind: 'hero', arch: 'infantry', align: 'l', cost: 13, defBonus: 5, res: { cut: -10 }, cls: 'Berserker de transformación',
+  def('guille', { fac: 'mad', kind: 'hero', arch: 'infantry', align: 'l', cost: 17, defBonus: 5, res: { cut: -10 }, cls: 'Berserker de transformación',
     desc: 'Solo quería que parasen.', fx: 'fist',
     levels: [
-      L('Guille', 30, 6, 25, [W('Oye, ¿puedes parar?', 'm', 5, 3, 'imp', 'fist')], ['dejame']),
+      L('Guille', 30, 6, 25, [W('Oye, ¿puedes parar?', 'm', 6, 3, 'imp', 'fist')], ['dejame']),
       L('Guilletón', 66, 5, null, [W('Oye, ¿puedes parar?', 'm', 13, 3, 'imp', 'fist')], ['te_he_dicho'])
     ] });
 
-  def('tia_maria', { fac: 'mad', kind: 'hero', arch: 'support', align: 'n', cost: 20, cls: 'Sacerdotisa del rock',
+  def('tia_maria', { fac: 'mad', kind: 'hero', arch: 'support', align: 'n', cost: 29, cls: 'Sacerdotisa del rock',
     desc: 'No necesita un ejército cuando tiene un concierto.', fx: 'vinyl', vetCost: [25, 35, 45],
     levels: [
       L('Tía María', 38, 5, null, [W('Vinilo arrojadizo', 'm', 4, 2, 'imp', 'vinyl'), W('Rock del Boss', 'd', 7, 3, 'psi', 'notes')], ['boss'])
     ] });
 
-  def('tio_guillermo', { fac: 'mad', kind: 'hero', arch: 'tank', align: 'n', cost: 26, defBonus: -10, cls: 'Titán del vino',
+  def('tio_guillermo', { fac: 'mad', kind: 'hero', arch: 'tank', align: 'n', cost: 20, defBonus: -10, cls: 'Titán del vino',
     desc: 'La Gran Reserva nunca se rinde.', fx: 'wine',
     levels: [
-      L('Tío Guillermo', 47, 4, 20, [W('Sombrerazo australiano', 'm', 8, 2, 'imp', 'fist'), W('Brindis rotundo', 'd', 5, 2, 'psi', 'wine')], ['tabernero']),
+      L('Tío Guillermo', 36, 4, 20, [W('Sombrerazo australiano', 'm', 6, 2, 'imp', 'fist'), W('Brindis rotundo', 'd', 4, 2, 'psi', 'wine')], ['tabernero']),
       L('Guillermo Reserva', 54, 4, 28, [W('Sombrerazo australiano', 'm', 9, 2, 'imp', 'fist'), W('Brindis rotundo', 'd', 6, 2, 'psi', 'wine')], ['cata']),
       L('Don Guillermo Crianza', 62, 4, 38, [W('Sombrerazo australiano', 'm', 11, 2, 'imp', 'fist'), W('Brindis rotundo', 'd', 7, 2, 'psi', 'wine')], ['barrica']),
       L('Guillermo Gran Reserva', 72, 4, 52, [W('Sombrerazo australiano', 'm', 12, 3, 'imp', 'fist'), W('Brindis rotundo', 'd', 8, 2, 'psi', 'wine')], ['bodega']),
       L('Emperador del Tempranillo', 84, 5, null, [W('Sombrerazo australiano', 'm', 14, 3, 'imp', 'fist'), W('Brindis rotundo', 'd', 9, 3, 'psi', 'wine')], ['gran_cosecha'], { res: { psi: 10 } })
     ] });
 
-  def('ponchu', { fac: 'mad', kind: 'hero', arch: 'agile', align: 'c', cost: 19, defBonus: 10, cls: 'Monje de combate',
+  def('ponchu', { fac: 'mad', kind: 'hero', arch: 'agile', align: 'c', cost: 24, defBonus: 10, cls: 'Monje de combate',
     desc: 'Pide silencio gritando.', fx: 'kick',
     levels: [
       L('Ponchu', 33, 6, 28, [W('Patada voladora', 'm', 8, 2, 'imp', 'kick'), W('GRITAR MUY FUERTE', 'd', 5, 2, 'psi', 'shout')], ['grito_guerra']),
@@ -264,17 +271,17 @@
       L('Alfonso Escribano', 59, 7, null, [W('Patada voladora', 'm', 12, 3, 'imp', 'kick'), W('GRITAR MUY FUERTE', 'd', 8, 3, 'psi', 'shout')], ['patada_estrato'])
     ] });
 
-  def('dantart', { fac: 'mad', kind: 'hero', arch: 'infantry', align: 'n', cost: 13, defBonus: 5, cls: 'Unidad colectiva',
+  def('dantart', { fac: 'mad', kind: 'hero', arch: 'infantry', align: 'n', cost: 14, defBonus: 5, cls: 'Unidad colectiva',
     desc: 'Uno solo es peligroso. Cuatro requieren un seguro.', fx: 'fist',
     levels: [
-      L('Los Dantart (1/4)', 27, 6, 20, [W('Golpe de hermano', 'm', 5, 3, 'imp', 'fist')], []),
+      L('Los Dantart (1/4)', 27, 6, 20, [W('Golpe de hermano', 'm', 6, 3, 'imp', 'fist')], []),
       L('Los Dantart (2/4)', 38, 6, 30, [W('Golpe de hermano', 'm', 6, 4, 'imp', 'fist')], ['relevo']),
       L('Los Dantart (3/4)', 51, 6, 40, [W('Golpe de hermano', 'm', 7, 4, 'imp', 'fist'), W('Bombardeo fraternal', 'd', 5, 2, 'pro', 'rocks')], []),
       L('Los Dantart (4/4)', 66, 6, null, [W('Golpe de hermano', 'm', 8, 5, 'imp', 'fist'), W('Bombardeo fraternal', 'd', 7, 3, 'pro', 'rocks')], ['familia'], { res: { imp: 10 } })
     ] });
 
   // ---------- VERANEANTES ----------
-  def('santiago', { fac: 'ver', kind: 'hero', arch: 'tank', align: 'l', cost: 30, defBonus: -15, cls: 'Superpesado',
+  def('santiago', { fac: 'ver', kind: 'hero', arch: 'tank', align: 'l', cost: 27, defBonus: -15, cls: 'Superpesado',
     desc: 'Una montaña con gafas.', fx: 'quake',
     levels: [
       L('Santiago Vidao', 62, 3, 30, [W('Pisotón monumental', 'm', 11, 2, 'imp', 'quake')], ['muro']),
@@ -282,7 +289,7 @@
       L('La Montaña de Maliayo', 91, 3, null, [W('Pisotón monumental', 'm', 15, 3, 'imp', 'quake')], ['montana'], { res: { imp: 25 } })
     ] });
 
-  def('mario', { fac: 'ver', kind: 'hero', arch: 'support', align: 'n', cost: 22, res: { pro: 15 }, cls: 'Mercader guerrero',
+  def('mario', { fac: 'ver', kind: 'hero', arch: 'support', align: 'n', cost: 25, res: { pro: 15 }, cls: 'Mercader guerrero',
     desc: 'La cuenta siempre llega.', fx: 'coins',
     levels: [
       L('Mario de la Avenida', 35, 5, 27, [W('Bandejazo', 'm', 5, 2, 'imp', 'tray'), W('Lluvia de propinas', 'd', 7, 3, 'pro', 'coins')], ['cuenta_cerrada']),
@@ -290,7 +297,7 @@
       L('El Señor de la Avenida', 58, 6, null, [W('Bandejazo', 'm', 8, 2, 'imp', 'tray'), W('Lluvia de propinas', 'd', 11, 3, 'pro', 'coins')], ['enterrado'])
     ] });
 
-  def('chanchenchi', { fac: 'ver', kind: 'hero', arch: 'agile', align: 'n', cost: 22, defBonus: 10, cls: 'Asesino escaramuzador',
+  def('chanchenchi', { fac: 'ver', kind: 'hero', arch: 'agile', align: 'n', cost: 23, defBonus: 10, cls: 'Asesino escaramuzador',
     desc: 'Si lo ves, es porque ya se ha ido.', fx: 'knife', res: { imp: -15 },
     levels: [
       L('Chanchenchi', 30, 7, 26, [W('Navajita relámpago', 'm', 8, 3, 'cut', 'knife'), W('Reflejo metálico', 'd', 4, 2, 'psi', 'glint')], ['escurridizo']),
@@ -298,7 +305,7 @@
       L('La Sombra del Prao', 50, 8, null, [W('Navajita relámpago', 'm', 12, 3, 'cut', 'knife'), W('Reflejo metálico', 'd', 6, 3, 'psi', 'glint')], ['no_me_has_visto'])
     ] });
 
-  def('kepa_nikola', { fac: 'ver', kind: 'hero', arch: 'infantry', align: 'n', cost: 27, res: { imp: 10 }, cls: 'Luchadores de equipo',
+  def('kepa_nikola', { fac: 'ver', kind: 'hero', arch: 'infantry', align: 'n', cost: 19, res: { imp: 10 }, cls: 'Luchadores de equipo',
     desc: 'La negociación acaba en suplex.', fx: 'quake',
     levels: [
       L('Kepa & Nikola', 43, 5, 32, [W('Suplex fraternal', 'm', 9, 2, 'imp', 'quake')], ['llave_vasca']),
@@ -306,7 +313,7 @@
       L('La Dupla Imparable', 70, 5, null, [W('Suplex fraternal', 'm', 13, 3, 'imp', 'quake'), W('Silla de campeonato', 'd', 6, 2, 'pro', 'chair')], ['suplex'])
     ] });
 
-  def('tio_tony', { fac: 'ver', kind: 'hero', arch: 'support', align: 'n', cost: 24, defBonus: -5, cls: 'Oráculo de los improperios',
+  def('tio_tony', { fac: 'ver', kind: 'hero', arch: 'support', align: 'n', cost: 20, defBonus: -5, cls: 'Oráculo de los improperios',
     desc: 'Su vocabulario es un arma de destrucción masiva.', fx: 'shout', res: { psi: 20 },
     levels: [
       L('Tío Tony', 39, 4, 25, [W('Bastón imperativo', 'm', 5, 2, 'imp', 'fist'), W('¡BRUJA!', 'd', 8, 2, 'psi', 'shout')], ['tu_ven_aqui']),
@@ -314,7 +321,7 @@
       L('Tony, Azote de Brujas', 65, 5, null, [W('Bastón imperativo', 'm', 7, 2, 'imp', 'fist'), W('¡BRUJA!', 'd', 12, 3, 'psi', 'shout')], ['brujaaa'])
     ] });
 
-  def('castro', { fac: 'ver', kind: 'hero', arch: 'mystic', align: 'n', cost: 23, res: { cha: 10 }, cls: 'Invocador aristocrático',
+  def('castro', { fac: 'ver', kind: 'hero', arch: 'mystic', align: 'n', cost: 25, res: { cha: 10 }, cls: 'Invocador aristocrático',
     desc: 'Su puma tiene mejor pedigrí que tú.', fx: 'relic',
     levels: [
       L('Castro', 34, 5, 27, [W('Bastón de señorito', 'm', 5, 2, 'imp', 'fist'), W('Reliquia carísima', 'd', 7, 3, 'pro', 'relic')], ['puma']),
@@ -322,7 +329,7 @@
       L('Emperador del Brilli-Brilli', 58, 6, null, [W('Bastón de señorito', 'm', 9, 2, 'imp', 'fist'), W('Reliquia carísima', 'd', 11, 3, 'pro', 'relic')], ['felino'])
     ] });
 
-  def('changel', { fac: 'ver', kind: 'hero', arch: 'agile', align: 'c', cost: 24, defBonus: 5, cls: 'Bailarín guerrero',
+  def('changel', { fac: 'ver', kind: 'hero', arch: 'agile', align: 'c', cost: 21, defBonus: 5, cls: 'Bailarín guerrero',
     desc: 'Puede que pierdas la batalla, pero no el ritmo.', fx: 'dance', terrainBonus: { dance: 10 },
     levels: [
       L('Changel', 32, 7, 26, [W('Zapateo mortal', 'm', 7, 3, 'imp', 'kick'), W('Mirada de bachata', 'd', 4, 2, 'psi', 'hearts')], ['pasito']),
@@ -341,6 +348,25 @@
   minion('puma', 'ver', 'Puma de Diseño', 'agile', 18, 6, [W('Zarpazo de diseño', 'm', 6, 2, 'cut', 'claw')], 'Tiene más seguidores que tú.');
   minion('puma2', 'ver', 'Puma con Pedigrí', 'agile', 25, 6, [W('Zarpazo de diseño', 'm', 8, 2, 'cut', 'claw')], 'Collar ceremonial y certificado de origen.');
   minion('puma3', 'ver', 'Puma Imperial', 'agile', 35, 6, [W('Zarpazo imperial', 'm', 10, 2, 'cut', 'claw')], 'Armadura dorada. Desprecio absoluto.');
+
+  /* ---------- Rasgos únicos ---------- */
+  VV.WSPECIAL = {
+    marksman: { n: 'Puntería', d: 'Al atacar, nunca baja del 60 % de probabilidad de impacto.' },
+    drain: { n: 'Absorber', d: 'Recupera la mitad del daño que inflige.' },
+    charge: { n: 'Carga', d: 'Al atacar con ella, ambos bandos hacen el doble de daño.' },
+    backstab: { n: 'Por la espalda', d: 'Daño doble si hay un aliado al otro lado del objetivo.' },
+    firststrike: { n: 'Primer golpe', d: 'Golpea siempre primero, también al defenderse.' },
+    dice: { n: 'Azar', d: 'Siempre 55 % de probabilidad de impacto, sin importar el terreno.' }
+  };
+  const special = (id, wname, sp, fromLvl) => U[id].levels.forEach((L, i) => { if (i >= (fromLvl || 0)) L.w.forEach(w => { if (w.n === wname) w.sp = sp; }); });
+  special('pilar', '¡Puchi, vuela!', 'marksman');
+  special('pedro', 'Dar la chapa', 'drain');
+  special('ponchu', 'Patada voladora', 'charge');
+  special('chanchenchi', 'Navajita relámpago', 'backstab');
+  special('guille', 'Oye, ¿puedes parar?', 'firststrike', 1);
+  special('tia_carmen', 'Dados del Catán', 'dice');
+  const trait = (id, ab) => U[id].levels[0].ab.unshift(ab);
+  trait('ramon', 'brindis'); trait('carlos', 'inspiracion'); trait('santiago', 'piedra'); trait('tia_maria', 'concierto'); trait('tio_guillermo', 'beber');
 
   VV.HEROES = { ast: [], mad: [], ver: [] };
   Object.values(U).forEach(u => { if (u.kind === 'hero') VV.HEROES[u.fac].push(u.id); });

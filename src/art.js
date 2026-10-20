@@ -879,7 +879,7 @@
     grass: [[70, 122, 50], [86, 140, 58], [60, 106, 44]], park: [[52, 96, 40], [62, 110, 46], [44, 82, 34]], street: [[148, 136, 120], [124, 113, 99], [98, 89, 78]],
     alley: [[132, 121, 106], [112, 102, 89], [90, 82, 72]], plaza: [[196, 180, 148], [176, 160, 130], [150, 136, 110]], castle: [[134, 128, 116], [112, 107, 97], [86, 82, 74]],
     tavern: [[150, 136, 120], [126, 114, 100], [100, 90, 80]], mud: [[112, 78, 48], [94, 64, 38], [128, 96, 64]], dance: [[214, 182, 110], [184, 148, 76], [160, 124, 60]],
-    stage: [[130, 84, 44], [106, 66, 34], [84, 52, 26]], water: [[38, 98, 142], [30, 82, 124], [56, 122, 168]], sand: [[220, 206, 166], [196, 182, 142]]
+    stage: [[130, 84, 44], [106, 66, 34], [84, 52, 26]], rock: [[118, 110, 98], [94, 88, 78], [140, 132, 118]], water: [[38, 98, 142], [30, 82, 124], [56, 122, 168]], sand: [[220, 206, 166], [196, 182, 142]]
   };
   function texCol(t, wx, wy, xir) {
     const bx = Math.floor(wx / 3), by = Math.floor(wy / 3), n = hash(bx, by, 1), n2 = hash(bx, by, 2);
@@ -905,6 +905,8 @@
       case 'mud': c = mid > 0.6 ? P[1] : n < 0.15 ? P[1] : n > 0.9 ? P[2] : P[0]; if (n2 < 0.03) c = [150, 170, 180]; break;
       case 'dance': c = ((bx >> 2) + (by >> 2)) % 2 ? P[1] : P[0]; if (n < 0.08) c = P[2]; break;
       case 'stage': c = by % 3 === 0 ? P[2] : P[0]; break;
+      case 'sand': c = n < 0.15 ? P[1] : P[0]; if (n2 < 0.01) c = [240, 236, 220]; break;
+      case 'rock': c = mid > 0.6 ? P[2] : n < 0.25 ? P[1] : P[0]; break;
       case 'water': { const w = vnoise(wx / 30 + 3, wy / 14, 9); c = w > 0.68 ? P[2] : w < 0.3 ? P[1] : P[0]; if (n < 0.04) c = [120, 170, 205]; break; }
     }
     const lf = 0.9 + low * 0.18;
@@ -944,6 +946,41 @@
     });
   }
   ART.villageSpr = villageSpr;
+  function marineraSpr(v) {
+    return decoSprite('marinera' + v, 58, 60, S => {
+      const fac = ['#3f7fb8', '#3f9a6a', '#e0b23c', '#c94f3d', '#7a5ab0'][v % 5], trim = ['#f4efe2', '#2e5d3a', '#3f7fb8'][v % 3];
+      S.poly([[12, 14], [46, 14], [46, 56], [12, 56]], M(fac), { bev: 1.5, trim: M(trim), trimW: 0.9 });
+      S.poly([[8, 16], [29, 3], [50, 16]], M('#a63d27'), { bev: 2.5, folds: 3 });
+      S.rect(14, 30, 30, 2.4, M('#f4efe2'), { noLine: true }); for (let i = 0; i < 7; i++) S.rect(15 + i * 4.2, 32.4, 1, 5, M('#f4efe2'));
+      [[16, 19], [34, 19]].forEach(([x, y]) => { S.rect(x, y, 8, 9, M('#f4efe2')); S.rect(x + 1.5, y + 1.5, 5, 6, M('#9fd0e6', 'glass')); });
+      S.rect(25, 42, 8, 14, M('#5d3a1a', 'wood')); S.rect(15, 43, 7, 7, M('#f4efe2')); S.rect(16.5, 44.5, 4, 4, M('#ffd78a', 'glass'));
+      S.ell(50, 54, 6, 2.2, M('#c94f3d', 'wood')); S.ell(50, 53, 5, 1.2, M('#e8dcc0', 'wood'));
+    });
+  }
+  function faroSpr() {
+    return decoSprite('faro', 40, 78, S => {
+      S.poly([[13, 70], [27, 70], [24, 18], [16, 18]], M('#f2efe6'), { cyl: 1 });
+      [30, 46, 62].forEach(y => S.rect(14.5 - (70 - y) * -0.05, y - 4, 11 + (y - 18) * 0.05, 4, M('#c0392b'), { noLine: true }));
+      S.rect(14, 12, 12, 7, M('#2b2b30', 'metal')); S.rect(15.5, 13, 9, 5, F('#ffe7a0'));
+      S.poly([[12, 12], [20, 4], [28, 12]], M('#c0392b'), { bev: 1.5 }); S.ell(20, 3.5, 1.6, 1.6, M('#d9a62e', 'metal'));
+      S.rect(10, 70, 20, 4, M('#9a8f80', 'stone'));
+    });
+  }
+  function lonjaSpr() {
+    return decoSprite('lonja', 76, 58, S => {
+      S.poly([[6, 22], [70, 22], [70, 54], [6, 54]], M('#e9dcc2'), { bev: 1.5 });
+      S.poly([[2, 24], [38, 6], [74, 24]], M('#8f3a26'), { bev: 2.5, folds: 3 });
+      for (let i = 0; i < 4; i++) { S.rect(11 + i * 15, 34, 10, 20, M('#3f6f8f')); S.ell(16 + i * 15, 34, 5, 4, M('#3f6f8f')); }
+      S.rect(28, 25, 20, 6, M('#2e5d7a')); S.ell(38, 15, 4, 4, M('#f4efe2'));
+      [[10, 56], [62, 56]].forEach(([x, y]) => { S.ell(x, y, 5, 2.5, M('#9aa3ad', 'metal')); S.ell(x, y - 1.5, 3, 1.2, M('#c0c8d0', 'metal')); });
+    });
+  }
+  function rockSpr(v) {
+    return decoSprite('rock' + v, 60, 46, S => {
+      [[30, 30, 20, 13], [16, 34, 11, 9], [44, 33, 12, 10], [26, 20, 12, 10], [38, 22, 9, 8]].forEach(([x, y, rx, ry], i) => S.ell(x + (v % 2 ? i : -i) * 0.6, y, rx, ry, M(i % 2 ? '#7d7466' : '#8c8476', 'stone')));
+      if (v % 2) S.ell(34, 16, 6, 3, M('#5f8f3a', 'leaf'));
+    });
+  }
   function barrelPile() {
     return decoSprite('barrels', 48, 42, S => {
       const w = M('#8b5a2b', 'wood'), hoop = M('#4c4c57', 'metal');
@@ -978,8 +1015,11 @@
       if (lmTiles.has(i)) return;
       if (t.t === 'park') for (let k = 0; k < 3; k++) { const ox = [-12, 11, 0][k] + (hash(c, r, k) - 0.5) * 8, oy = [-8, -5, 9][k] + (hash(c, r, k + 4) - 0.5) * 6, v = Math.floor(hash(c, r, k + 9) * 4); items.push({ y: y + oy + 12, f: () => { shadowEll(ctx, x + ox + 6, y + oy + 13, 10, 3.5); ctx.drawImage(treeSpr2(v), Math.round(x + ox - 15), Math.round(y + oy - 24), 30, 38); } }); }
       if (t.t === 'wall' && !xir) items.push({ y: y + 18, f: () => { shadowEll(ctx, x + 10, y + 20, 30, 7); ctx.drawImage(houseSpr(c * 7 + r), Math.round(x - 32), Math.round(y - 42), 64, 62); } });
+      if (t.t === 'rock') items.push({ y: y + 12, f: () => { shadowEll(ctx, x + 6, y + 14, 28, 7); ctx.drawImage(rockSpr(c + r), Math.round(x - 30), Math.round(y - 28), 60, 46); } });
+      if (t.prop >= 0 && ['faro', 'lonja'].includes(s.props[t.prop].kind)) { const k = s.props[t.prop].kind; items.push({ y: y + 16, f: () => { shadowEll(ctx, x + 8, y + 16, 24, 6); if (k === 'faro') ctx.drawImage(faroSpr(), Math.round(x - 20), Math.round(y - 66), 40, 78); else ctx.drawImage(lonjaSpr(), Math.round(x - 38), Math.round(y - 44), 76, 58); } }); }
       if (t.t === 'wall' && xir) items.push({ y: y + 16, f: () => { shadowEll(ctx, x + 6, y + 14, 22, 6); ctx.drawImage(barrelPile(), Math.round(x - 24), Math.round(y - 28), 48, 42); } });
-      if (t.prop >= 0 && (t.t === 'tavern')) { const kind = xir ? 'caseta' : 'caseria'; items.push({ y: y + 14, f: () => { shadowEll(ctx, x + 8, y + 17, 30, 7); ctx.drawImage(villageSpr(kind, c * 3 + r), Math.round(x - 35), Math.round(y - 48), 70, 65); } }); }
+      if (t.prop >= 0 && t.t === 'tavern' && s.props[t.prop].kind === 'marinera') items.push({ y: y + 14, f: () => { shadowEll(ctx, x + 8, y + 17, 28, 7); ctx.drawImage(marineraSpr(c * 3 + r), Math.round(x - 30), Math.round(y - 50), 60, 62); } });
+      else if (t.prop >= 0 && (t.t === 'tavern')) { const kind = xir ? 'caseta' : 'caseria'; items.push({ y: y + 14, f: () => { shadowEll(ctx, x + 8, y + 17, 30, 7); ctx.drawImage(villageSpr(kind, c * 3 + r), Math.round(x - 35), Math.round(y - 48), 70, 65); } }); }
       if (t.t === 'cover' && t.prop < 0) items.push({ y: y + 10, f: () => { const col = ['#b5452c', '#2e7d32', '#1e5aa8'][(c + r) % 3]; blk(ctx, x - 22, y - 2, 44, 3, '#5d3a1a'); for (let q = 0; q < 5; q++) blk(ctx, x - 20 + q * 10, y + 1, 3, 13, '#5d3a1a'); blk(ctx, x - 26, y - 12, 52, 10, col); for (let q = 0; q < 52; q += 6) blk(ctx, x - 26 + q, y - 4, 3, 2, '#fafafa'); blk(ctx, x - 26, y - 12, 52, 2, sh(col, 0.25)); } });
       if (t.t === 'castle' || t.t === 'keep') items.push({ y: y + 6, f: () => { for (let q = -24; q <= 20; q += 11) { blk(ctx, x + q, y - SQ / 2 + 3, 7, 7, '#5c584f'); blk(ctx, x + q, y - SQ / 2 + 3, 7, 2, '#8a857a'); } if (t.t === 'keep') { shadowEll(ctx, x + 6, y + 6, 18, 5); blk(ctx, x - 12, y - 18, 24, 22, '#77726a'); blk(ctx, x + 6, y - 18, 6, 22, '#5e5a52'); blk(ctx, x - 14, y - 22, 28, 5, '#5c5850'); for (let q = -14; q < 14; q += 7) blk(ctx, x + q, y - 26, 4, 4, '#5c5850'); blk(ctx, x - 4, y - 8, 8, 12, '#2f261d'); } } });
     });

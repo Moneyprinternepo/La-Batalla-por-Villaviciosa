@@ -101,7 +101,7 @@
       const M = VV.MAPS[id], tmp = {}; E.buildMap(tmp, id); const mm = ART.minimap(tmp, 220, 150).cv; mm.className = 'pix';
       return h('button', { class: 'map-card' + (setup.map === id ? ' on' : ''), 'aria-pressed': setup.map === id, onclick: () => { setup.map = id; renderSetup(); AU.sfx('select'); } }, mm, h('strong', {}, M.n), h('p', {}, M.sub));
     };
-    root.appendChild(h('section', { class: 'setup-sec' }, h('h2', {}, 'Campo de batalla'), h('div', { class: 'map-row' }, mapCard('villa'), mapCard('xiringuelu'))));
+    root.appendChild(h('section', { class: 'setup-sec' }, h('h2', {}, 'Campo de batalla'), h('div', { class: 'map-row' }, Object.keys(VV.MAPS).map(mapCard))));
     const seg = (key, opts) => h('div', { class: 'seg', role: 'group' }, opts.map(([v, label]) => h('button', { class: setup[key] === v ? 'on' : '', 'aria-pressed': setup[key] === v, onclick: () => { setup[key] = v; renderSetup(); } }, label)));
     root.appendChild(h('section', { class: 'setup-sec opts' }, h('h2', {}, 'Reglas'),
       h('label', {}, 'Jugadores'), seg('players', [[1, 'Contra la IA'], [2, 'Dos jugadores en este equipo']]),
@@ -517,7 +517,7 @@
       body.appendChild(h('div', { class: 'pv-weapons', role: 'radiogroup' }, ws.map((w, k) => {
         const Q = E.combatParams(s, a, d, k);
         return h('button', { class: 'pv-w' + (k === wi ? ' on' : ''), role: 'radio', 'aria-checked': k === wi, onclick: () => { wi = k; render(); } },
-          h('span', { class: 'wn' }, w.n), h('span', {}, `${Q.aDmg}×${Q.aStr}`), h('span', { class: 'muted' }, VV.DMG[w.t] + (w.r === 'm' ? ', cuerpo a cuerpo' : ', a distancia')), h('span', { class: 'cth' }, Q.aCth + ' %'),
+          h('span', { class: 'wn' }, w.n), h('span', {}, `${Q.aDmg}×${Q.aStr}`), h('span', { class: 'muted' }, VV.DMG[w.t] + (w.r === 'm' ? ', cuerpo a cuerpo' : ', a distancia') + (w.sp ? ', ' + VV.WSPECIAL[w.sp].n.toLowerCase() : '')), h('span', { class: 'cth' }, Q.aCth + ' %'),
           h('span', { class: 'counter' }, Q.dw ? `Represalia: ${Q.dw.n} ${Q.dDmg}×${Q.dStr} (${Q.dCth} %)` : 'Sin represalia'));
       })));
       const Q = E.combatParams(s, a, d, wi), res = E.resist(d)[Q.aw.t] || 0;
@@ -738,7 +738,7 @@
       u.st.length ? h('div', { class: 'chips' }, u.st.map(x => h('span', { class: 'chip', style: `--sc:${VV.STATUS[x.id].col}`, title: VV.STATUS[x.id].d }, VV.STATUS[x.id].n + (x.id === 'evasivo' ? ' +' + x.val : '')))) : null,
       u.armed ? h('div', { class: 'armed' }, 'Preparada: ' + VV.ABIL[u.armed.src].n) : null,
       h('h4', {}, 'Ataques'),
-      h('ul', { class: 'weap' }, E.weapons(u).map(w => h('li', {}, h('strong', {}, w.n), h('span', {}, `${w.d}×${w.s}`), h('span', { class: 'muted' }, `${VV.DMG[w.t]}, ${w.r === 'm' ? 'cuerpo a cuerpo' : 'a distancia'}`)))),
+      h('ul', { class: 'weap' }, E.weapons(u).map(w => h('li', {}, h('strong', {}, w.n), h('span', {}, `${w.d}×${w.s}`), h('span', { class: 'muted' }, `${VV.DMG[w.t]}, ${w.r === 'm' ? 'cuerpo a cuerpo' : 'a distancia'}${w.sp ? ', ' + VV.WSPECIAL[w.sp].n.toLowerCase() : ''}`)))),
       h('h4', {}, 'Resistencias'),
       h('div', { class: 'res' }, VV.DMG_ORDER.map(k => h('span', { class: res[k] > 0 ? 'pos' : res[k] < 0 ? 'neg' : '' }, VV.DMG[k] + ' ' + (res[k] > 0 ? '+' : '') + res[k] + ' %'))),
       h('p', { class: 'desc' }, '«' + d.desc + '»'));
@@ -904,28 +904,67 @@
 
   /* ---------------- Ayuda y ajustes ---------------- */
   function helpContent() {
-    const T = Object.entries(VV.TERRAIN).filter(([, t]) => t.cost < 99).map(([, t]) => h('tr', {}, h('td', {}, t.n), h('td', {}, t.cost), h('td', {}, t.def + ' %')));
+    const S = 22, SQ = Math.sqrt(3) * S;
+    const cv = (w, hh) => { const c = ART.mk(w * 2, hh * 2); c.style.width = w + 'px'; c.style.height = hh + 'px'; c.className = 'pix help-ill'; const x = c.getContext('2d'); x.scale(2, 2); x.imageSmoothingEnabled = false; return [c, x]; };
+    const hex = (x, cx, cy, fill, stroke, lw) => { ART.hexPath(x, cx, cy, S - 1); if (fill) { x.fillStyle = fill; x.fill(); } if (stroke) { x.strokeStyle = stroke; x.lineWidth = lw || 1.5; x.stroke(); } };
+    const hc = (c, r, ox, oy) => [ox + S + c * 1.5 * S, oy + SQ / 2 + r * SQ + (c & 1) * SQ / 2];
+    const spr = (x, def, lvl, cx, cy, sc, flip, frame) => { const s = ART.sprite(def, lvl, frame || 'idle0'); x.save(); if (flip) { x.translate(cx, 0); x.scale(-1, 1); x.translate(-cx, 0); } x.drawImage(s, cx - 32 * sc, cy - 72 * sc, 64 * sc, 76 * sc); x.restore(); };
+    const label = (x, t, px, py, col, size, bg) => { x.font = `bold ${size || 11}px "Pixelify Sans", monospace`; x.textAlign = 'center'; if (bg) { const w = x.measureText(t).width + 8; x.fillStyle = bg; x.fillRect(px - w / 2, py - (size || 11), w, (size || 11) + 5); } x.lineWidth = 3; x.strokeStyle = '#1c1424'; x.strokeText(t, px, py); x.fillStyle = col || '#fff'; x.fillText(t, px, py); };
+    const field = (x, cols, rows, ox, oy, terr) => { for (let c = 0; c < cols; c++) for (let r = 0; r < rows; r++) { const [px, py] = hc(c, r, ox, oy); hex(x, px, py, ART.BASE[(terr && terr(c, r)) || 'grass'], 'rgba(0,0,0,0.25)', 1); } };
+    const ills = {
+      move() { const [c, x] = cv(230, 150); field(x, 7, 3, 4, 4, (cc, r) => (cc === 4 && r === 0) || (cc === 5 && r === 1) ? 'park' : 'grass');
+        [[1, 1], [2, 0], [2, 1], [3, 1], [3, 2], [1, 0], [1, 2], [2, 2], [0, 1]].forEach(([cc, r]) => { const [px, py] = hc(cc, r, 4, 4); hex(x, px, py, 'rgba(255,250,225,0.45)', 'rgba(255,250,225,0.9)', 1); });
+        x.fillStyle = '#fff3c4'; [[2, 1], [3, 1]].forEach(([cc, r]) => { const [px, py] = hc(cc, r, 4, 4); x.fillRect(px - 3, py - 3, 6, 6); });
+        const [ux, uy] = hc(1, 1, 4, 4); hex(x, ux, uy, null, '#ffd65a', 2.5); spr(x, 'ramon', 0, ux, uy + 16, 0.95);
+        label(x, '2', ...hc(3, 1, 4, 4).map((v, i) => v + (i ? 16 : 0)), '#fff3c4', 13); return c; },
+      attack() { const [c, x] = cv(230, 150); field(x, 5, 3, 30, 4);
+        const [a1, a2] = hc(1, 1, 30, 4), [b1, b2] = hc(2, 1, 30, 4); hex(x, b1, b2, 'rgba(255,75,58,0.22)', '#ff4b3a', 2.5); hex(x, a1, a2, null, '#ffd65a', 2.5);
+        spr(x, 'pilar', 1, a1, a2 + 16, 0.95, false, 'atk'); spr(x, 'pedro', 0, b1, b2 + 16, 0.95, true);
+        x.save(); x.translate(a1 + 22, a2 - 14); ART.hamster(ART.P(x), -2, -2, 'goggles'); x.restore();
+        label(x, '70 %', b1, b2 - 34, '#fff3c4', 12, 'rgba(28,20,36,0.85)'); label(x, '−9', b1 + 24, b2 - 10, '#ff6b5a', 14); return c; },
+      terrain() { const [c, x] = cv(230, 110); [['street', '30 %'], ['park', '50 %'], ['plaza', '20 %'], ['castle', '60 %']].forEach(([t, p], i) => { const px = 30 + i * 56, py = 46; hex(x, px, py, ART.BASE[t], '#1c1424', 1.5); if (t === 'park') { x.fillStyle = '#2f6a2a'; x.beginPath(); x.arc(px, py - 6, 11, 0, 7); x.fill(); x.fillStyle = '#5d3a1a'; x.fillRect(px - 2, py + 3, 4, 7); } label(x, p, px, py + 38, '#fff3c4', 12); label(x, VV.TERRAIN[t].n.split(' ')[0], px, py + 4, '#fff', 10); }); return c; },
+      flags() { const [c, x] = cv(230, 120); x.fillStyle = '#4f8a38'; x.fillRect(0, 70, 230, 50);
+        const v = ART.villageSpr('caseria', 1); x.drawImage(v, 6, 22, 64, 60); x.drawImage(v, 140, 22, 64, 60);
+        const flag = (px, col, acc, q) => { x.fillStyle = '#1a120c'; x.fillRect(px, 6, 3, 40); x.fillStyle = col; x.fillRect(px + 3, 6, 22, 14); x.strokeStyle = '#1a120c'; x.lineWidth = 1.5; x.strokeRect(px + 3, 6, 22, 14); x.fillStyle = acc; x.fillRect(px + 9, 11, 10, 3); x.fillRect(px + 12, 8, 3, 9); if (q) label(x, '?', px + 14, 18, '#6d675e', 10); };
+        flag(56, '#e8e2d2', '#9a948a', true); flag(190, VV.FACTIONS.ast.col, VV.FACTIONS.ast.accent);
+        x.fillStyle = '#fff3c4'; x.font = 'bold 22px monospace'; x.textAlign = 'center'; x.fillText('→', 108, 58);
+        label(x, '+8 PV', 172, 104, '#7ee787', 12); label(x, '+oro', 172, 117, '#ffd54f', 11); label(x, 'neutral', 40, 110, '#e8e2d2', 10); return c; },
+      recruit() { const [c, x] = cv(230, 140); field(x, 6, 3, 10, 4, (cc, r) => (cc <= 2 ? 'castle' : 'grass'));
+        const [kx, ky] = hc(1, 1, 10, 4); hex(x, kx, ky, ART.BASE.keep, '#ffd65a', 2);
+        [[0, 0], [0, 1], [2, 0], [2, 1], [1, 2]].forEach(([cc, r]) => { const [px, py] = hc(cc, r, 10, 4); hex(x, px, py, 'rgba(90,220,255,0.35)', '#5ad8ff', 1.5); });
+        spr(x, 'carlota', 0, kx, ky + 16, 0.9); const [px, py] = hc(2, 1, 10, 4); x.globalAlpha = 0.85; spr(x, 'pooh', 0, px, py + 16, 0.95); x.globalAlpha = 1;
+        ['ramon', 'pilar', 'teresa'].forEach((id, i) => x.drawImage(ART.portrait(id, 0, 0, 30), 150 + i * 0, 10 + i * 36, 30, 30));
+        label(x, 'R', 200, 62, '#fff3c4', 16, 'rgba(28,20,36,0.85)'); return c; },
+      tod() { const [c, x] = cv(230, 90); VV.TOD.forEach((T, i) => { const px = 20 + i * 38, py = 36; const day = T.law >= 0 && i !== 3; x.fillStyle = i === 3 ? '#ff7043' : day ? '#ffd54f' : '#e3f2fd'; x.beginPath(); x.arc(px, py, 10, 0, 7); x.fill(); if (!day && i !== 3) { x.fillStyle = '#2b2f63'; x.beginPath(); x.arc(px + 4, py - 3, 9, 0, 7); x.fill(); } label(x, ['Alba', 'Día', 'Tarde', 'Ocaso', 'Noche', 'Oscura'][i], px, py + 26, '#fff', 9); label(x, T.law === 1 ? '☼+' : T.law === -1 ? '☾+' : '=', px, py + 40, T.law === 1 ? '#ffd54f' : T.law === -1 ? '#b3c7ff' : '#bbb', 10); }); return c; },
+      evo() { const [c, x] = cv(230, 140); x.fillStyle = 'rgba(0,0,0,0.15)'; x.fillRect(0, 108, 230, 4);
+        [0, 1, 2].forEach(i => { spr(x, 'pooh', i, 34 + i * 76, 112, 0.95); if (i < 2) label(x, '›', 72 + i * 76, 80, '#fff3c4', 18); });
+        x.fillStyle = '#1c1424'; x.fillRect(20, 124, 190, 8); x.fillStyle = '#b388ff'; x.fillRect(21, 125, 130, 6); label(x, 'XP', 12, 132, '#c9a7ff', 9); return c; },
+      zoc() { const [c, x] = cv(230, 140); field(x, 6, 3, 10, 4);
+        const [ex, ey] = hc(3, 1, 10, 4); E.Hex.neighbors(3, 1).forEach(([cc, r]) => { if (cc < 0 || r < 0 || r > 2) return; const [px, py] = hc(cc, r, 10, 4); hex(x, px, py, 'rgba(220,50,40,0.3)', 'rgba(220,50,40,0.7)', 1); });
+        spr(x, 'santiago', 0, ex, ey + 16, 0.9, true); const [ux, uy] = hc(1, 1, 10, 4); spr(x, 'teresa', 0, ux, uy + 16, 0.9);
+        const [sx, sy] = hc(2, 1, 10, 4); label(x, 'ALTO', sx, sy + 4, '#ff8a80', 11, 'rgba(28,20,36,0.85)'); return c; }
+    };
+    const card = (n, title, ill, text) => h('article', { class: 'help-card' }, h('div', { class: 'hc-n' }, n), h('h3', {}, title), ills[ill](), h('p', {}, text));
     return h('div', { class: 'help' },
-      h('h2', {}, 'Cómo jugar'),
-      h('p', {}, 'Cada bando mueve todas sus unidades en su turno. Gana quien derrote al comandante rival o, en el modo Dominio, quien controle cuatro propiedades durante dos rondas completas seguidas.'),
-      h('h3', {}, 'Mover y atacar'),
-      h('p', {}, 'Selecciona una unidad para ver sus casillas alcanzables. El coste depende del terreno y del arquetipo. Al entrar junto a un enemigo de nivel 1 o superior la unidad se detiene: es su zona de control. Cada unidad puede atacar o usar una habilidad ofensiva una vez por turno, y atacar termina su movimiento. Las recién reclutadas e invocadas esperan al turno siguiente.'),
-      h('p', {}, 'Haz clic en un enemigo para abrir la previsualización: verás el daño por golpe, la probabilidad de impacto, la represalia y la probabilidad de que caiga cada unidad. Un ataque cuerpo a cuerpo recibe represalia cuerpo a cuerpo y uno a distancia, a distancia. Si el defensor no tiene ese tipo de arma, no responde.'),
-      h('h3', {}, 'Probabilidad y daño'),
-      h('p', {}, 'Probabilidad de impacto = 100 − defensa del defensor en su terreno, entre 20 % y 90 %. Daño = base × hora del día × resistencia × estados. La defensa decide si el golpe entra; la resistencia, cuánto duele.'),
-      h('h3', {}, 'Ciclo día y noche'),
-      h('p', {}, 'Amanecer, Día, Tarde, Atardecer, Noche y Noche profunda. Las unidades diurnas hacen +25 % de día y −25 % de noche; las nocturnas, al revés.'),
-      h('h3', {}, 'Economía'),
-      h('p', {}, 'Cada ronda: 6 de oro + 2 por propiedad (la Plaza del Güevu, la Plaza de Abastos y los Banderines dan 4; la Gran Barra, 3) − 1 por nivel de cada personaje reclutado. Se empieza con 75 de oro. El comandante debe estar en su casilla de mando para reclutar, y puedes repetir personajes. Todos los puestos con bandera (caserías, casetas, plazas y monumentos con bandera) se capturan al entrar, cambian la bandera a tu color, curan 8 PV al empezar el turno y dan oro; descansar sin moverse cura 2.'),
-      h('h3', {}, 'Experiencia'),
-      h('p', {}, 'Sobrevivir a un combate da 2 XP, cada golpe acertado 1 XP y eliminar a un enemigo 8 × su nivel. Capturar por primera vez una propiedad da 3 XP. Al llenar la barra morada la unidad evoluciona, cambia de aspecto y recupera toda su vida.'),
-      h('h3', {}, 'La pantalla de batalla'),
-      h('ul', {}, ['Arriba: ronda, hora del día, oro y propiedades. Arriba a la izquierda del mapa, el objetivo de la batalla.', 'Abajo: tu ejército (verde: listo; ámbar: a medias; gris: ya actuó), las instrucciones del momento con las habilidades de la unidad elegida, y los botones de reclutar y terminar turno.', 'Derecha: ficha, habilidades, evolución y crónica de la unidad que elijas, tuya o rival.', 'Colores del tablero: claro, puedes moverte; marco rojo, puedes atacar; dorado, objetivo de habilidad; rojo tenue, alcance de un rival. Las banderas marcan los puestos: blanca con interrogación si nadie los controla, del color de la facción si ya son suyos.'].map(x => h('li', {}, x))),
+      h('h2', {}, 'Cómo jugar en nueve pasos'),
+      h('p', { class: 'lead' }, 'Cada bando mueve todas sus unidades en su turno. Ganas si derrotas al comandante rival (o, en el modo Dominio, si controlas cuatro puestos durante dos rondas seguidas). Tu comandante empieza ya en nivel 3.'),
+      h('div', { class: 'help-grid' },
+        card(1, 'Elige y mueve', 'move', 'Haz clic en una unidad: las casillas claras son su alcance y el número indica lo que cuesta llegar. Haz clic en una de ellas para moverte.'),
+        card(2, 'Ataca', 'attack', 'Haz clic en un enemigo con marco rojo. Verás la probabilidad de impacto, el daño por golpe, la represalia y la probabilidad de que caiga cada uno. Un ataque termina el movimiento.'),
+        card(3, 'El terreno importa', 'terrain', 'El porcentaje es la probabilidad de esquivar. Los parques y casas protegen; las plazas y el barro dejan al descubierto. Cada personaje suma o resta su esquiva propia.'),
+        card(4, 'Captura banderas', 'flags', 'Entra en un puesto con bandera para que ondee con tu color. Cada puesto cura 8 PV al empezar tu turno y te da oro en cada ronda.'),
+        card(5, 'Recluta en la fortaleza', 'recruit', 'Con el comandante en la casilla de mando, pulsa R o «Reclutar» y elige una casilla azul. Puedes repetir personajes; llegan listos en tu siguiente turno.'),
+        card(6, 'Día y noche', 'tod', 'Los diurnos pegan +25 % de día y −25 % de noche; los nocturnos al revés. El amanecer y el atardecer son neutrales.'),
+        card(7, 'Gana experiencia y evoluciona', 'evo', 'Atacar, sobrevivir y derrotar enemigos llena la barra morada. Al llenarla, el personaje evoluciona: cambia de aspecto, recupera la vida y aprende habilidades.'),
+        card(8, 'Zonas de control', 'zoc', 'Al entrar junto a un enemigo de nivel 1 o superior, tu unidad se detiene. Úsalo para bloquear pasos estrechos y proteger a tu comandante.'),
+        h('article', { class: 'help-card wide' }, h('div', { class: 'hc-n' }, 9), h('h3', {}, 'Rasgos únicos'),
+          h('ul', { class: 'traits' }, Object.entries(VV.WSPECIAL).map(([k, w]) => h('li', {}, h('strong', {}, w.n + ': '), w.d)).concat(
+            ['brindis', 'inspiracion', 'piedra', 'concierto', 'beber'].map(k => h('li', {}, h('strong', {}, VV.ABIL[k].n + ': '), VV.ABIL[k].d)))))),
       h('h3', {}, 'Controles'),
-      h('ul', {}, ['Clic izquierdo: seleccionar, mover y atacar.', 'Clic derecho o Esc: cancelar.', 'Rueda o botones + y −: zoom. Arrastrar: desplazar el mapa.', 'Espacio: terminar turno. R: reclutar. N: siguiente unidad.', 'H: mostrar la rejilla. Z: zonas de control. M: sonido.'].map(x => h('li', {}, x))),
+      h('div', { class: 'keys' }, [['Clic', 'seleccionar, mover, atacar'], ['Clic dcho. / Esc', 'cancelar'], ['Rueda', 'zoom'], ['Arrastrar', 'mover la cámara'], ['Espacio', 'fin de turno'], ['R', 'reclutar'], ['N', 'siguiente unidad'], ['H', 'rejilla'], ['Z', 'zonas de control'], ['M', 'sonido']].map(([k, d]) => h('div', { class: 'key' }, h('kbd', {}, k), h('span', {}, d)))),
       h('h3', {}, 'Terrenos'),
-      h('table', { class: 'terr' }, h('tr', {}, h('th', {}, 'Terreno'), h('th', {}, 'Coste'), h('th', {}, 'Defensa')), T),
-      h('p', { class: 'muted' }, 'Tanques: +1 de coste en parque y barro, defensa máxima 50 % salvo en fortaleza. Ágiles: −1 de coste en parque y barro y +10 de defensa en parque. Místicos: +5 en edificios. Apoyo: +5 en sidrerías y casetas.'));
+      h('table', { class: 'terr' }, h('tr', {}, h('th', {}, 'Terreno'), h('th', {}, 'Coste'), h('th', {}, 'Defensa')), Object.entries(VV.TERRAIN).filter(([, t]) => t.cost < 99).map(([, t]) => h('tr', {}, h('td', {}, t.n), h('td', {}, t.cost), h('td', {}, t.def + ' %')))),
+      h('p', { class: 'muted' }, 'Tanques: +1 de coste en parque, barro y arena; defensa máxima 50 % salvo en fortaleza. Ágiles: −1 de coste en parque, barro y arena y +10 de defensa en parque. Místicos: +5 en edificios. Apoyo: +5 en sidrerías y casetas.'));
   }
   function helpModal() { openModal(h('div', {}, helpContent(), h('div', { class: 'row end' }, h('button', { class: 'btn', 'data-autofocus': 1, onclick: () => closeModal() }, 'Cerrar'))), 'wide scroll'); }
   function settingsModal() {
@@ -966,7 +1005,7 @@
         h('div', { class: 'ency-info' }, h('h2', {}, L.name), h('p', { class: 'muted' }, `${F.n}, ${d.cls.toLowerCase()}`), h('p', { class: 'desc' }, '«' + d.desc + '»'),
           h('div', { class: 'stats' }, h('span', {}, h('b', {}, 'PV '), L.hp), h('span', {}, h('b', {}, 'MOV '), L.mov), d.cost ? h('span', {}, h('b', {}, 'Coste '), d.cost) : null,
             h('span', {}, h('b', {}, 'XP '), L.xp || (d.kind === 'summon' ? '—' : 'Máximo')), h('span', {}, h('b', {}, VV.ARCH[d.arch].n)), h('span', {}, h('b', {}, VV.ALIGN[d.align])), d.defBonus ? h('span', {}, h('b', {}, 'Esquiva propia '), (d.defBonus > 0 ? '+' : '') + d.defBonus + ' %') : null),
-          h('h4', {}, 'Ataques'), h('ul', { class: 'weap' }, L.w.map(w => h('li', {}, h('strong', {}, w.n), h('span', {}, `${w.d}×${w.s}`), h('span', { class: 'muted' }, `${VV.DMG[w.t]}, ${w.r === 'm' ? 'cuerpo a cuerpo' : 'a distancia'}`)))),
+          h('h4', {}, 'Ataques'), h('ul', { class: 'weap' }, L.w.map(w => h('li', {}, h('strong', {}, w.n), h('span', {}, `${w.d}×${w.s}`), h('span', { class: 'muted' }, `${VV.DMG[w.t]}, ${w.r === 'm' ? 'cuerpo a cuerpo' : 'a distancia'}${w.sp ? ', ' + VV.WSPECIAL[w.sp].n.toLowerCase() : ''}`)))),
           abl.length ? h('h4', {}, 'Habilidades') : null, h('ul', { class: 'abl' }, abl.map(a => h('li', {}, h('strong', {}, VV.ABIL[a].n), h('span', { class: 'muted' }, VV.ABIL[a].d)))),
           h('h4', {}, 'Resistencias'), h('div', { class: 'res' }, VV.DMG_ORDER.map(k => h('span', { class: res[k] > 0 ? 'pos' : res[k] < 0 ? 'neg' : '' }, VV.DMG[k] + ' ' + (res[k] > 0 ? '+' : '') + res[k] + ' %'))))),
       d.levels.length > 1 ? h('div', { class: 'evo-strip' }, h('h4', {}, 'Árbol de evolución'), h('div', { class: 'strip' }, d.levels.map((l, i) => [i ? h('span', { class: 'evo-arrow' }, '›') : null,

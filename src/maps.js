@@ -10,7 +10,8 @@
     M: { t: 'mud' }, d: { t: 'dance' }, t: { t: 'grass', obstacle: 'tables' }, '=': { t: 'street' },
     S: { t: 'tavern', prop: 'sidreria' }, G: { t: 'plaza', prop: 'guevu' }, R: { t: 'cover', prop: 'palco' },
     I: { t: 'cover', prop: 'iglesia' }, A: { t: 'plaza', prop: 'abastos' }, c: { t: 'tavern', prop: 'caseta' },
-    X: { t: 'tavern', prop: 'barra' }, E: { t: 'stage', prop: 'escenario' }, F: { t: 'grass', prop: 'banderines' }
+    X: { t: 'tavern', prop: 'barra' }, E: { t: 'stage', prop: 'escenario' }, F: { t: 'grass', prop: 'banderines' },
+    B: { t: 'sand' }, '^': { t: 'rock' }, P: { t: 'tavern', prop: 'marinera' }, L: { t: 'cover', prop: 'faro' }, O: { t: 'plaza', prop: 'lonja' }
   };
 
   VV.PROPKINDS = {
@@ -22,6 +23,9 @@
     caseta: { gold: 2, heal: 8, bar: true, d: 'Puesto con bandera: caseta de peña que cura 8 PV y da 2 de oro.' },
     barra: { gold: 3, heal: 8, bar: true, d: 'Puesto con bandera: la Gran Barra cura 8 PV y da 3 de oro.' },
     escenario: { gold: 2, heal: 8, def: 5, d: 'Puesto con bandera: cura 8 PV, da oro y +5 de defensa en la plataforma.' },
+    marinera: { gold: 2, heal: 8, bar: true, d: 'Puesto con bandera: casa marinera que cura 8 PV y da 2 de oro.' },
+    faro: { gold: 2, heal: 8, def: 10, d: 'Puesto con bandera: el faro cura 8 PV, da oro y +10 de defensa a quien lo ocupa.' },
+    lonja: { gold: 4, heal: 8, d: 'Puesto con bandera: la lonja cura 8 PV y da 4 de oro por ronda.' },
     banderines: { gold: 4, heal: 8, d: 'Puesto con bandera: cura 8 PV y da 4 de oro por ronda.' }
   };
 
@@ -109,6 +113,55 @@
       stage: [14, 2],
       charanga: 7,
       events: 'xiringuelu'
+    },
+    tazones: {
+      n: 'El Puerto de Tazones',
+      sub: 'Pueblo marinero del concejo de Villaviciosa: casas de colores, playas, acantilados y dos faros. Dieciocho puestos con bandera.',
+      rows: [
+        'WWWWWWWWWWWWWWWWWWWWWWWWWWWW',
+        'W^^WWWWWWWWWWWWWWWWWWWWWW^^W',
+        '^^L^WWBBWWWWWWWWWWWWBBWW^L^^',
+        '^gg^BBBBBBWWWWWWWWBBBBBB^gg^',
+        'gg.g.BBP.B#WWWWWW#B.PBB.g.gg',
+        'TTg..a.##.##.O..##.##.a..gTT',
+        'TTg.a..##..a....a..##..a.gTT',
+        'gCC..P...##......##...P..CCg',
+        'gKC.....a##.,,,,.##a.....CKg',
+        'gCC.T..a....,,,,....a..T.CCg',
+        'ggTT..##..##....##..##..TTgg',
+        'gTTT..##.P##.I..##P.##..TTTg',
+        'ggT...a..............a...Tgg',
+        'gg..P..TTT..####..TTT..P..gg',
+        'g..MM.TTTTT.####.TTTTT.MM..g',
+        'gP.MM..TT...P..P...TT..MM.Pg',
+        'ggg...gg..gggggggg..gg...ggg',
+        'TTgggTTgggPggggggPgggTTgggTT',
+        'TTTggTTTggggggggggggTTTggTTT',
+        'TTTTgTTTTggggggggggTTTTgTTTT'
+      ],
+      names: {
+        '2,2': 'Faro de Poniente', '25,2': 'Faro de Levante', '13,5': 'La Lonja', '13,11': 'Atrio de San Miguel',
+        '7,4': 'Casa de la Ballena',
+        '20,4': 'Casa Azul del Muelle',
+        '5,7': 'Casa de los Remos',
+        '22,7': 'Casa del Bonito',
+        '9,11': 'Casa Les Redes',
+        '18,11': 'Casa del Patrón',
+        '4,13': 'Casa de la Galerna',
+        '23,13': 'Casa del Barquero',
+        '1,15': 'Casa La Gaviota',
+        '12,15': 'Casa del Calderu',
+        '15,15': 'Casa El Pañol',
+        '26,15': 'Casa Les Nases',
+        '10,17': 'Casa del Farolero',
+        '17,17': 'Casa de la Sardina'
+      },
+      landmarks: [
+        { k: 'iglesia', tiles: [[12, 13], [13, 13], [14, 13], [15, 13], [12, 14], [13, 14], [14, 14], [15, 14]] }
+      ],
+      keeps: [[1, 8], [26, 8]],
+      lonja: [13, 5],
+      events: 'tazones'
     }
   };
 
@@ -120,6 +173,9 @@
     subidon: { n: 'Subidón de la Orquesta', d: 'Las unidades a dos hexágonos o menos del escenario reciben Inspirado.' },
     charanga: { n: 'Avalancha de la Charanga', d: 'La charanga cruza el prao por la fila central: Mareado a quien se interponga.' },
     temazo: { n: 'Temazo de la Orquesta', d: 'Las unidades en la pista de baile reciben +1 de movimiento esta ronda.' },
+    mareaalta: { n: 'Marea alta', d: 'El mar cubre parte de la playa: +1 al coste de movimiento en la arena durante dos rondas.' },
+    desembarco: { n: 'Desembarco imperial', d: 'Se recuerda el desembarco de 1517: las unidades a dos hexágonos o menos de la lonja reciben Inspirado.' },
+    sardinada: { n: 'Gran sardinada', d: 'Huele a sardina asada: las unidades en casas marineras o junto a ellas recuperan 3 PV.' },
     barralibre: { n: 'Barra Libre de Sidra Fantástica', d: 'Las unidades en barras y casetas, o junto a ellas, se curan 3 PV.' }
   };
   VV.eventsForRound = function (mapId, round) {
@@ -127,6 +183,8 @@
     if (round < 2) return out;
     if (mapId === 'villa') {
       if (round % 4 === 0) out.push(['mercau', 'orbayu', 'campanada'][(round / 4 - 1) % 3]);
+    } else if (mapId === 'tazones') {
+      if (round % 4 === 0) out.push(['mareaalta', 'desembarco', 'sardinada'][(round / 4 - 1) % 3]);
     } else {
       if (round % 4 === 0) out.push(['subidon', 'charanga', 'temazo'][(round / 4 - 1) % 3]);
       if (round % 5 === 0) out.push('barralibre');

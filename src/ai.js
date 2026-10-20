@@ -243,7 +243,7 @@
       const close = foes.filter(e => Hex.dist(e.x, e.y, u.x, u.y) <= 3);
       for (const a of E.abilities(u)) {
         const A = VV.ABIL[a];
-        if (!['summon', 'barricade', 'sticky', 'heal', 'healAlly', 'buff'].includes(A.kind)) continue;
+        if (!['summon', 'barricade', 'sticky', 'heal', 'healAlly', 'buff', 'drink'].includes(A.kind)) continue;
         if (!E.abilityState(s, u, a).ok) continue;
         const T = E.abilityTargets(s, u, a);
         const toward = near.length ? near.reduce((m, e) => (Hex.dist(e.x, e.y, u.x, u.y) < Hex.dist(m.x, m.y, u.x, u.y) ? e : m)) : null;
@@ -252,6 +252,7 @@
         if (A.kind === 'barricade' && close.length && T.list.length) return { type: 'ability', unit: u.id, abil: a, targets: sortToward(T.list).slice(0, T.need) };
         if (A.kind === 'sticky' && close.length && T.list.length) return { type: 'ability', unit: u.id, abil: a, targets: [sortToward(T.list)[0]] };
         if (A.kind === 'heal' && u.hp < E.maxHp(u) * 0.7) return { type: 'ability', unit: u.id, abil: a };
+        if (A.kind === 'drink' && E.xpNext(u) && !E.isMaxLevel(u) && (!close.length || u.hp < E.maxHp(u) * 0.8)) return { type: 'ability', unit: u.id, abil: a };
         if (A.kind === 'healAlly' && T.list.length) return { type: 'ability', unit: u.id, abil: a, targets: [T.list[0]] };
         if (A.kind === 'buff' && close.length && (u.mp === 0 || mem.done.has(u.id))) return { type: 'ability', unit: u.id, abil: a };
       }
